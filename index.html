@@ -1,8 +1,87 @@
+<!DOCTYPE html>
 <html>
+<head>
+	<style>
+		svg {
+			background-color: red;
+		}
+		
+		circle.player1 {
+			fill: blue;
+		}
+		
+		circle.player2 {
+			fill: green;
+		}
+	</style>
+	
+	<script>
+		var svg;
+		var ignore = false;
+		var player = 1;
 
-<body>
-<svg width="200px" height="200px">
-	<circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
+		var vertices = [];
+		
+		function initialize() {
+			svg	= document.getElementsByTagName('svg')[0]
+		}
+	
+		function on_svg_click(evt) {
+			if (ignore)
+				return;
+			
+			// Prevent multiple events
+			ignore = true;
+			
+		    var e = evt.target;
+			var dim = e.getBoundingClientRect();
+			var x = evt.clientX - dim.left;
+			var y = evt.clientY - dim.top;
+			
+			placePoint(x, y);
+			
+			// switch players
+			if (player == 1) {
+				player = 2;
+			} else {
+				player = 1;
+			}
+			
+			// Release event block
+			ignore = false;
+		}
+	
+		function placePoint(x, y) {
+		
+			var element = document.createElementNS("http://www.w3.org/2000/svg", 'circle'); 
+			element.setAttribute("cx", x);
+			element.setAttribute("cy", y);
+			element.setAttribute("r", 5);
+			element.setAttribute("class", "player" + player);
+			
+			svg.appendChild(element);
+		
+			var vertex = {player:player, x:x, y:y};
+			vertices.push(vertex);
+		}
+		
+		function voronoi() {
+		}
+		
+		function Triangulation() {
+			
+		}
+		
+		function DelaunayTriangulation() {
+			
+		}
+	</script>
+</head>
+
+
+<body onload="initialize()">
+<svg id="panel" width="600px" height="400px" onclick="on_svg_click(evt)">
+	
 </svg>
 </body>
 
