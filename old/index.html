@@ -3,7 +3,11 @@
 <head>
 	<style>
 		svg {
-			background-color: red;
+			background-color: yellow;
+		}
+		
+		line {
+			stroke: red;
 		}
 		
 		circle.player1 {
@@ -65,13 +69,38 @@
 			vertices.push(vertex);
 		}
 		
-		function voronoi() {
-		}
-		
 		function Triangulation() {
+			var status = [];
+			var events = [];
 			
+			// Push all events to the event queue
+			for (var i = 0; i < vertices.length; i++) {
+				events.push(vertices[i]);
+			}		
+
+			// Sort event descending by y value
+			events.sort(function(a, b){return a.y-b.y})
+			
+			// Sweep line
+			var line = document.createElementNS("http://www.w3.org/2000/svg", 'line'); 
+			svg.appendChild(line);
+			for (var i = 0; i < events.length; i++) {
+				var event = events[i];
+				
+				line.setAttribute("x1", 0);
+				line.setAttribute("x2", 800);
+				line.setAttribute("y1", event.y);
+				line.setAttribute("y2", event.y);			
+				
+				console.log(event.y);
+			}		
+			
+			// Debug event queue
+			console.log(events);
+			
+			//alert("Triangulate BITCH!");
 		}
-		
+				
 		function DelaunayTriangulation() {
 			
 		}
@@ -80,8 +109,9 @@
 
 
 <body onload="initialize()">
+<button type="button" onclick="Triangulation()" >Triangulate</button>
 <svg id="panel" width="600px" height="400px" onclick="on_svg_click(evt)">
-	
+
 </svg>
 </body>
 
