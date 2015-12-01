@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,16 +23,64 @@ namespace Voronoi
     {
         HalfEdge selected;
         Graph graph = new Graph();
+        bool drawcircles = true;
         float marginleft = 100;
+        float margintop = 300;
 
         public MainWindow()
         {
             InitializeComponent();
+            InitBrushes();
 
             graph.Create();
             selected = graph.HalfEdges[0];
 
             Redraw();
+        }
+
+        private List<Brush> _brushes;
+        private void InitBrushes()
+        {
+            _brushes = new List<Brush>();
+            var props = typeof(Brushes).GetProperties(BindingFlags.Public | BindingFlags.Static);
+            foreach (var propInfo in props)
+            {
+                _brushes.Add((Brush)propInfo.GetValue(null, null));
+            }
+        }
+
+        private Random _rand = new Random();
+        private Brush GetRandomBrush()
+        {
+            return _brushes[_rand.Next(_brushes.Count)];
+        }
+
+        public void DrawFaces() {
+            foreach (Face face in graph.Faces)
+            {
+                //if (face != selected.Face)
+                  //  continue;
+
+                Polygon p = new Polygon();
+                p.Stroke = Brushes.Black;
+
+                if (face.Brush == null)
+                    face.Brush = GetRandomBrush();
+
+                p.Fill = face.Brush;
+
+                p.StrokeThickness = 1;
+                p.HorizontalAlignment = HorizontalAlignment.Left;
+                p.VerticalAlignment = VerticalAlignment.Center;
+
+                Point p1 = new Point(marginleft + face.HalfEdge.Origin.x, margintop - face.HalfEdge.Origin.y);
+                Point p2 = new Point(marginleft + face.HalfEdge.Next.Origin.x, margintop - face.HalfEdge.Next.Origin.y);
+                Point p3 = new Point(marginleft + face.HalfEdge.Next.Next.Origin.x, margintop - face.HalfEdge.Next.Next.Origin.y);
+
+                p.Points = new PointCollection() { p1, p2, p3 };
+
+                canvas.Children.Add(p);
+            }
         }
 
         public void DrawVertices()
@@ -69,11 +118,15 @@ namespace Voronoi
         
         public void Redraw()
         {
+
             canvas.Children.Clear();
+
+            DrawFaces();
 
             DrawLines();
 
-            DrawCircumCenters();
+            if (drawcircles)
+                DrawCircumCenters();
 
             DrawVertices();
 
@@ -153,7 +206,13 @@ namespace Voronoi
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             HalfEdge he = null;
-            
+
+            if (e.Key == Key.C)
+            {
+                drawcircles = !drawcircles;
+                Redraw();
+            }
+
             if (e.Key == Key.R)
             {
                 Redraw();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Voronoi
 {
@@ -11,9 +12,12 @@ namespace Voronoi
         public Face(HalfEdge halfEdge)
         {
             this.HalfEdge = halfEdge;
+            this.Brush = null;
         }
 
         public HalfEdge HalfEdge;
+
+        public Brush Brush;
 
         public bool inside(Vertex a_u1)
         {
@@ -53,13 +57,13 @@ namespace Voronoi
         private Vertex Circumcenter(Vertex a, Vertex b, Vertex c)
         {
             // determine midpoints (average of x & y coordinates)
-            Vertex midAB = Midpoint(a, b);
-            Vertex midBC = Midpoint(b, c);
+            Vertex midAB = Utility.Midpoint(a, b);
+            Vertex midBC = Utility.Midpoint(b, c);
 
             // determine slope
             // we need the negative reciprocal of the slope to get the slope of the perpendicular bisector
-            float slopeAB = -1 / Slope(a, b);
-            float slopeBC = -1 / Slope(b, c);
+            float slopeAB = -1 / Utility.Slope(a, b);
+            float slopeBC = -1 / Utility.Slope(b, c);
             
             // y = mx + b
             // solve for b
@@ -84,19 +88,6 @@ namespace Voronoi
             Vertex v1 = HalfEdge.Origin;
 
             return Convert.ToSingle(Math.Sqrt((c.x - v1.x) * (c.x - v1.x) + (c.y - v1.y) * (c.y - v1.y)));
-        }
-
-        public float Slope(Vertex v1, Vertex v2)
-        {
-            float value = (v2.y - v1.y) / (v2.x - v1.x);
-            return value;
-        }
-
-        private Vertex Midpoint(Vertex v1, Vertex v2)
-        {
-            float mx = (v1.x / 2) + (v2.x / 2);
-            float my = (v1.y / 2) + (v2.y / 2);
-            return new Vertex(mx, my);
         }
     }
 }

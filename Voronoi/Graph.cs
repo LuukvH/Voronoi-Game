@@ -93,6 +93,7 @@ namespace Voronoi
                 return false;
 
             List<Face> faces = AddVertex(face, vertex);
+            this.faces.AddRange(faces);
             Delaunay(faces);
 
             return true;
@@ -115,10 +116,6 @@ namespace Voronoi
             HalfEdge h9 = new HalfEdge(vertex);
             halfEdges.AddRange(new List<HalfEdge>() { h4, h5, h6, h7, h8, h9 });
 
-            // Add new faces
-            List<Face> faces = new List<Face>() { new Face(h1), new Face(h2), new Face(h3) };
-            this.faces.AddRange(faces);
-
             h4.Twin = h7;
             h7.Twin = h4;
             h5.Twin = h8;
@@ -130,19 +127,18 @@ namespace Voronoi
             h1.Face = face1;
             h5.Face = face1;
             h7.Face = face1;
-            faces.Add(face1);
 
             Face face2 = new Face(h2);
             h2.Face = face2;
             h6.Face = face2;
             h8.Face = face2;
-            faces.Add(face2);
 
             Face face3 = new Face(h3);
             h3.Face = face3;
             h4.Face = face3;
             h9.Face = face3;
-            faces.Add(face3);
+
+            List<Face> faces = new List<Face>() { face1, face2, face3 };
 
             // Set all next
             h1.Next = h5;
@@ -180,7 +176,7 @@ namespace Voronoi
                 Vertex v = face.Circumcenter();
                 float d = face.Diameter();
 
-                if (Distance(face.HalfEdge.Twin.Prev.Origin, v) < d)
+                if (Utility.Distance(face.HalfEdge.Twin.Prev.Origin, v) < d)
                 {
                     Flip(face.HalfEdge);
 
@@ -209,6 +205,10 @@ namespace Voronoi
             HalfEdge h5 = h4.Next;
             HalfEdge h6 = h5.Next;
 
+            // Set faces defined as h1 and h4
+            h1.Face.HalfEdge = h1;
+            h4.Face.HalfEdge = h4;
+
             if (h.Twin == h)
                 return;
 
@@ -228,14 +228,9 @@ namespace Voronoi
             h5.Prev = h3;
             h5.Next = h4;
             h4.Prev = h5;
-            h4.Face = h3.Face;
-            h5.Face = h3.Face;
             h4.Origin = h6.Origin;
-        }
-
-        public float Distance(Vertex v1, Vertex v2)
-        {
-            return Convert.ToSingle(Math.Sqrt((v2.x - v1.x) * (v2.x - v1.x) + (v2.y - v1.y) * (v2.y - v1.y)));
+            h3.Face = h4.Face;
+            h5.Face = h4.Face;
         }
     }
 }
