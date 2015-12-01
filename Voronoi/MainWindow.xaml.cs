@@ -23,7 +23,11 @@ namespace Voronoi
     {
         HalfEdge selected;
         Graph graph = new Graph();
+
         bool drawcircles = true;
+        bool drawfaces = true;
+        bool drawlines = true;
+
         float marginleft = 100;
         float margintop = 300;
 
@@ -55,11 +59,12 @@ namespace Voronoi
             return _brushes[_rand.Next(_brushes.Count)];
         }
 
-        public void DrawFaces() {
+        public void DrawFaces()
+        {
             foreach (Face face in graph.Faces)
             {
                 //if (face != selected.Face)
-                  //  continue;
+                //  continue;
 
                 Polygon p = new Polygon();
                 p.Stroke = Brushes.Black;
@@ -115,65 +120,71 @@ namespace Voronoi
             }
         }
 
-        
+
         public void Redraw()
         {
 
             canvas.Children.Clear();
 
-            DrawFaces();
+            if (drawfaces)
+                DrawFaces();
 
-            DrawLines();
+            if (drawlines)
+                DrawLines();
 
             if (drawcircles)
                 DrawCircumCenters();
 
             DrawVertices();
 
+            DrawVoronoi();
         }
 
         public void DrawCircumCenters()
         {
-            foreach(Face face in graph.Faces)
+            foreach (Face face in graph.Faces)
             {
-                // Create a StackPanel to contain the shape.
-                StackPanel myStackPanel = new StackPanel();
+                if (face is Triangle)
+                {
+                    // Create a StackPanel to contain the shape.
+                    StackPanel myStackPanel = new StackPanel();
 
-                // Create a red Ellipse.
-                Ellipse myEllipse = new Ellipse();
-                Ellipse centre = new Ellipse();
+                    // Create a red Ellipse.
+                    Ellipse myEllipse = new Ellipse();
+                    Ellipse centre = new Ellipse();
 
-                // Create a SolidColorBrush with a red color to fill the 
-                // Ellipse with.
-                SolidColorBrush mySolidColorBrush = new SolidColorBrush();
+                    // Create a SolidColorBrush with a red color to fill the 
+                    // Ellipse with.
+                    SolidColorBrush mySolidColorBrush = new SolidColorBrush();
 
-                // Describes the brush's color using RGB values. 
-                // Each value has a range of 0-255.
-                mySolidColorBrush.Color = Colors.LightGreen;
-                myEllipse.Stroke = mySolidColorBrush;
-                centre.Fill = mySolidColorBrush;
+                    // Describes the brush's color using RGB values. 
+                    // Each value has a range of 0-255.
+                    mySolidColorBrush.Color = Colors.LightGreen;
+                    myEllipse.Stroke = mySolidColorBrush;
+                    centre.Fill = mySolidColorBrush;
 
-                Vertex c = face.Circumcenter();
-                float d = face.Diameter();
+                    Vertex c = (face as Triangle).Circumcenter();
+                    float d = (face as Triangle).Diameter();
 
-                // Set the width and height of the Ellipse.
-                myEllipse.Width = d * 2;
-                myEllipse.Height = d * 2;
+                    // Set the width and height of the Ellipse.
+                    myEllipse.Width = d * 2;
+                    myEllipse.Height = d * 2;
 
-                centre.Width = 10;
-                centre.Height = 10;
+                    centre.Width = 10;
+                    centre.Height = 10;
 
-                Canvas.SetLeft(myEllipse, c.x - d + marginleft);
-                Canvas.SetTop(myEllipse, 300 - c.y - d);
-                Canvas.SetZIndex(myEllipse, 3);
+                    Canvas.SetLeft(myEllipse, c.x - d + marginleft);
+                    Canvas.SetTop(myEllipse, 300 - c.y - d);
+                    Canvas.SetZIndex(myEllipse, 3);
 
-                Canvas.SetLeft(centre, c.x - 5 + marginleft);
-                Canvas.SetTop(centre, 300 - c.y - 5);
-                Canvas.SetZIndex(centre, 3);
+                    Canvas.SetLeft(centre, c.x - 5 + marginleft);
+                    Canvas.SetTop(centre, 300 - c.y - 5);
+                    Canvas.SetZIndex(centre, 3);
 
-                // Add the Ellipse to the StackPanel.
-                canvas.Children.Add(myEllipse);
-                canvas.Children.Add(centre);
+                    // Add the Ellipse to the StackPanel.
+                    canvas.Children.Add(myEllipse);
+                    canvas.Children.Add(centre);
+                }
             }
         }
 
@@ -201,7 +212,39 @@ namespace Voronoi
                 canvas.Children.Add(line);
             }
         }
-        
+
+        // Testing only
+        public void DrawVoronoi()
+        {
+            foreach (HalfEdge halfEdge in graph.HalfEdges)
+            {
+
+                Face f1 = halfEdge.Face;
+                Face f2 = halfEdge.Twin.Face;
+
+                if (f1 is Triangle && f2 is Triangle)
+                {
+                    Triangle t1 = f1 as Triangle;
+                    Triangle t2 = f2 as Triangle;
+
+                    Vertex v1 = t1.Circumcenter();
+                    Vertex v2 = t2.Circumcenter();
+
+                    Line line = new Line();
+                    line.Visibility = System.Windows.Visibility.Visible;
+                    line.StrokeThickness = 2;
+                    line.Stroke = System.Windows.Media.Brushes.LightGreen;
+                    line.X1 = v1.x + marginleft;
+                    line.X2 = v2.x + marginleft;
+                    line.Y1 = 300 - v1.y;
+                    line.Y2 = 300 - v2.y;
+
+                    //halfEdge.Line = line;
+                    canvas.Children.Add(line);
+                }
+            }
+        }
+
         Brush brush = Brushes.Red;
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -210,6 +253,18 @@ namespace Voronoi
             if (e.Key == Key.C)
             {
                 drawcircles = !drawcircles;
+                Redraw();
+            }
+
+            if (e.Key == Key.L)
+            {
+                drawlines = !drawlines;
+                Redraw();
+            }
+
+            if (e.Key == Key.G)
+            {
+                drawfaces = !drawfaces;
                 Redraw();
             }
 
@@ -253,6 +308,6 @@ namespace Voronoi
             graph.AddVertex(vertex);
 
             Redraw();
-      }
+        }
     }
 }

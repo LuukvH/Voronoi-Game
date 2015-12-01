@@ -34,7 +34,7 @@ namespace Voronoi
             HalfEdge h3 = new HalfEdge(v3);
             halfEdges.AddRange(new List<HalfEdge>() { h1, h2, h3 });
 
-            Face face = new Face(h1);
+            Face face = new Triangle(h1);
             h1.Face = face;
             h2.Face = face;
             h3.Face = face;
@@ -53,7 +53,7 @@ namespace Voronoi
             HalfEdge h6 = new HalfEdge(v4);
             halfEdges.AddRange(new List<HalfEdge>() { h4, h5, h6 });
 
-            Face face1 = new Face(h4);
+            Face face1 = new Triangle(h4);
             h4.Face = face1;
             h5.Face = face1;
             h6.Face = face1;
@@ -123,17 +123,17 @@ namespace Voronoi
             h6.Twin = h9;
             h9.Twin = h6;
 
-            Face face1 = new Face(h1);
+            Face face1 = new Triangle(h1);
             h1.Face = face1;
             h5.Face = face1;
             h7.Face = face1;
 
-            Face face2 = new Face(h2);
+            Face face2 = new Triangle(h2);
             h2.Face = face2;
             h6.Face = face2;
             h8.Face = face2;
 
-            Face face3 = new Face(h3);
+            Face face3 = new Triangle(h3);
             h3.Face = face3;
             h4.Face = face3;
             h9.Face = face3;
@@ -167,10 +167,12 @@ namespace Voronoi
 
         private void Delaunay(List<Face> faces)
         {
-
             for (int i = 0; i < faces.Count; i++)
             {
-                Face face = faces[i];
+                if (!(faces[i] is Triangle))
+                    continue;
+
+                Triangle face = faces[i] as Triangle;                    
 
                 // Get all surrounding points
                 Vertex v = face.Circumcenter();

@@ -58,6 +58,7 @@
     <Compile Include="Face.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="HalfEdge.cs" />
+    <Compile Include="Triangle.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Vertex.cs" />
     <Compile Include="Voronois.cs" />
