@@ -55,9 +55,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Edge.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="SweepEvent.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="HalfEdge.cs" />
+    <Compile Include="SweepEventTypes.cs" />
     <Compile Include="Triangle.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Vertex.cs" />
