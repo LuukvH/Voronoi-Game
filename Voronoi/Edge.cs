@@ -25,6 +25,23 @@ namespace Voronoi
         public Vertex v1;
         public Vertex v2;
 
+        public bool IsEqual(Edge e)
+        {
+            if (!Extensions.NearlyEqual(this.v1.x, e.v1.x))
+                return false;
+
+            if (!Extensions.NearlyEqual(this.v1.y, e.v1.y))
+                return false;
+
+            if (!Extensions.NearlyEqual(this.v2.x, e.v2.x))
+                return false;
+
+            if (!Extensions.NearlyEqual(this.v2.y, e.v2.y))
+                return false;
+
+            return true;
+        }
+
         public bool Intersect(Edge e, out Vertex crossing)
         {
             crossing = new Vertex();
@@ -34,25 +51,25 @@ namespace Voronoi
             var rxs = r.Cross(s);
             var qpxr = (e.v1 - this.v1).Cross(r);
 
-            if (e.v1.x.Equals(this.v1.x) && e.v2.x.Equals(this.v2.x) &&
-                e.v1.y.Equals(this.v1.y) && e.v2.y.Equals(this.v2.y))
+            /*
+            // If lines are on top of each other
+            if (Extensions.NearlyEqual(e.v1.x, this.v1.x) && Extensions.NearlyEqual(e.v2.x, this.v2.x) &&
+                Extensions.NearlyEqual(e.v1.y, this.v1.y) && Extensions.NearlyEqual(e.v2.y, this.v2.y))
                 return false;
-                
+            */
+
+            /*
+            // Ignore begin and endpoints
+            if ((Extensions.NearlyEqual(e.v1.x, this.v1.x) && Extensions.NearlyEqual(e.v1.y, this.v1.y)) ||
+               (Extensions.NearlyEqual(e.v2.x, this.v2.x) && Extensions.NearlyEqual(e.v2.y, this.v2.y)) ||
+               (Extensions.NearlyEqual(e.v2.x, this.v1.x) && Extensions.NearlyEqual(e.v2.y, this.v1.y)) ||
+               (Extensions.NearlyEqual(e.v1.x, this.v2.x) && Extensions.NearlyEqual(e.v1.y, this.v2.y)))
+                return false;
+            */
 
             // If r x s = 0 and (q - p) x r = 0, then the two lines are collinear.
             if (rxs.IsZero() && qpxr.IsZero())
-            {
-                // 1. If either  0 <= (q - p) * r <= r * r or 0 <= (p - q) * s <= * s
-                // then the two lines are overlapping,
-                // if (considerCollinearOverlapAsIntersect)
-                if ((0 <= (e.v1 - this.v1) * r && (e.v1 - this.v1) * r <= r * r) || (0 <= (this.v1 - e.v1) * s && (this.v1 - e.v1) * s <= s * s))
-                    return false;
-
-                // 2. If neither 0 <= (q - p) * r = r * r nor 0 <= (p - q) * s <= s * s
-                // then the two lines are collinear but disjoint.
-                // No need to implement this expression, as it follows from the expression above.
                 return false;
-            }
 
             // 3. If r x s = 0 and (q - p) x r != 0, then the two lines are parallel and non-intersecting.
             if (rxs.IsZero() && !qpxr.IsZero())
@@ -62,7 +79,6 @@ namespace Voronoi
             float t = (e.v1 - this.v1).Cross(s) / rxs;
 
             // u = (q - p) x r / (r x s)
-
             var u = (e.v1 - this.v1).Cross(r) / rxs;
 
             // 4. If r x s != 0 and 0 <= t <= 1 and 0 <= u <= 1

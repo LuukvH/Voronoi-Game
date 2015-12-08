@@ -15,7 +15,7 @@ namespace Voronoi
         {
             origin = new Vertex(v.x, v.y);
             
-            Twin = this;
+            Twin = null;
             Next = null;
             Prev = null;
         }

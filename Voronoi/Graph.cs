@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Voronoi
         private List<Face> faces = new List<Face>();
         private List<Vertex> vertices = new List<Vertex>();
         private List<HalfEdge> halfEdges = new List<HalfEdge>();
+        private ObservableCollection<LogEntry> log = new ObservableCollection<LogEntry>();
 
         public Graph()
         {
@@ -20,6 +22,7 @@ namespace Voronoi
         public List<Face> Faces { get { return faces; } }
         public List<Vertex> Vertices { get { return vertices; } }
         public List<HalfEdge> HalfEdges { get { return halfEdges; } }
+        public ObservableCollection<LogEntry> Log { get { return log; } }
 
         public void Create()
         {
@@ -69,6 +72,31 @@ namespace Voronoi
             h5.Prev = h4;
             h6.Prev = h5;
             h4.Prev = h6;
+
+            HalfEdge h7 = new HalfEdge(v1);
+            HalfEdge h8 = new HalfEdge(v2);
+            HalfEdge h9 = new HalfEdge(v3);
+            HalfEdge h10 = new HalfEdge(v4);
+            halfEdges.AddRange(new List<HalfEdge>() { h7, h8, h9, h10 });
+
+            h10.Next = h7;
+            h7.Prev = h10;
+            h8.Next = h10;
+            h10.Prev = h8;
+            h9.Next = h8;
+            h8.Prev = h9;
+            h7.Next = h9;
+            h9.Prev = h7;
+
+            h3.Twin = h7;
+            h7.Twin = h3;
+            h8.Twin = h6;
+            h6.Twin = h8;
+            h2.Twin = h9;
+            h9.Twin = h2;
+
+            h10.Twin = h5;
+            h5.Twin = h10;
         }
 
         // Todo: tree implementation
@@ -103,11 +131,15 @@ namespace Voronoi
         {
             this.faces.Remove(face);
 
+            LogEntry logEntry = new LogEntry("Adding vertex.");
+            logEntry.objects.Add(vertex);
+            log.Add(logEntry);
+
             vertices.Add(vertex);
             HalfEdge h1 = face.HalfEdge;
             HalfEdge h2 = h1.Next;
             HalfEdge h3 = h2.Next;
-            
+
             HalfEdge h4 = new HalfEdge(h1.Origin);
             HalfEdge h5 = new HalfEdge(h2.Origin);
             HalfEdge h6 = new HalfEdge(h3.Origin);
@@ -167,39 +199,94 @@ namespace Voronoi
 
         private void Delaunay(List<Face> faces)
         {
+            LogEntry logEntry;
+            int limit = 20;
             for (int i = 0; i < faces.Count; i++)
             {
                 if (!(faces[i] is Triangle))
                     continue;
 
-                Triangle face = faces[i] as Triangle;                    
+                if (i > limit)
+                {
+                    logEntry = new LogEntry("length: " + faces.Count() + ", index: " + i + ", Limit reached.");
+                    log.Add(logEntry);
+                    break;
+                }
+
+                Triangle face = faces[i] as Triangle;
 
                 // Get all surrounding points
                 Vertex v = face.Circumcenter();
                 float d = face.Diameter();
 
-                if (Utility.Distance(face.HalfEdge.Twin.Prev.Origin, v) < d)
+                // Which points to test
+                List<Vertex> points = new List<Vertex>();
+                points.Add(face.HalfEdge.Twin.Prev.Origin);
+                points.Add(face.HalfEdge.Next.Twin.Next.Twin.Prev.Origin);
+                points.Add(face.HalfEdge.Next.Next.Twin.Prev.Origin);
+
+                points.Add(face.HalfEdge.Next.Twin.Prev.Origin);
+                points.Add(face.HalfEdge.Next.Twin.Next.Twin.Prev.Origin);
+                points.Add(face.HalfEdge.Next.Twin.Next.Next.Twin.Prev.Origin);
+
+                // Logging for testing purposes
+                logEntry = new LogEntry("length: " + faces.Count() + ", index: " + i + ", Testing points in circumcenter of a face.");
+                logEntry.objects.Add(face);
+                logEntry.objects.AddRange(points);
+                log.Add(logEntry);
+
+                // Test if flip is needed
+                bool flip = false;
+                foreach (Vertex p in points)
+                {
+                    if (Utility.Distance(p, v) < d)
+                    {
+                        flip = true;
+                        break;
+                    }
+                }
+
+                if (flip)
                 {
                     Flip(face.HalfEdge);
+                    logEntry = new LogEntry("Adding face for delaunay test.");
 
                     // Add surrounding faces
-                    if (face.HalfEdge.Next.Face != face)
-                        faces.Add(face.HalfEdge.Next.Face);
+                    if (face.HalfEdge.Next.Twin.Face != null && !faces.Contains(face.HalfEdge.Next.Twin.Face))
+                    {
+                        faces.Add(face.HalfEdge.Next.Twin.Face);
+                        logEntry.objects.Add(face.HalfEdge.Next.Twin.Face);
+                    }
 
-                    if (face.HalfEdge.Next.Next.Face != face)
-                        faces.Add(face.HalfEdge.Next.Next.Face);
+                    if (face.HalfEdge.Next.Next.Twin.Face != null && !faces.Contains(face.HalfEdge.Next.Next.Twin.Face))
+                    {
+                        faces.Add(face.HalfEdge.Next.Next.Twin.Face);
+                        logEntry.objects.Add(face.HalfEdge.Next.Next.Twin.Face);
+                    }
 
-                    if (face.HalfEdge.Twin.Next.Face != face)
-                        faces.Add(face.HalfEdge.Twin.Next.Face);
+                    if (face.HalfEdge.Twin.Next.Twin.Face != null && !faces.Contains(face.HalfEdge.Next.Twin.Next.Face))
+                    {
+                        faces.Add(face.HalfEdge.Twin.Next.Twin.Face);
+                        logEntry.objects.Add(face.HalfEdge.Twin.Next.Twin.Face);
+                    }
 
-                    if (face.HalfEdge.Twin.Next.Next.Face != face)
-                        faces.Add(face.HalfEdge.Twin.Next.Next.Face);
+                    if (face.HalfEdge.Twin.Next.Next.Twin.Face != null && !faces.Contains(face.HalfEdge.Twin.Next.Next.Twin.Face))
+                    {
+                        faces.Add(face.HalfEdge.Twin.Next.Next.Twin.Face);
+                        logEntry.objects.Add(face.HalfEdge.Twin.Next.Next.Twin.Face);
+                    }
+
+                    log.Add(logEntry);
                 }
             }
         }
 
         public void Flip(HalfEdge h)
         {
+            LogEntry logEntry = new LogEntry("Flipping edge.");
+            logEntry.objects.Add(h);
+            log.Add(logEntry);
+
             HalfEdge h1 = h;
             HalfEdge h2 = h1.Next;
             HalfEdge h3 = h2.Next;
@@ -207,12 +294,12 @@ namespace Voronoi
             HalfEdge h5 = h4.Next;
             HalfEdge h6 = h5.Next;
 
+            if (h1.Face == null || h4.Face == null)
+                return;
+
             // Set faces defined as h1 and h4
             h1.Face.HalfEdge = h1;
             h4.Face.HalfEdge = h4;
-
-            if (h.Twin == h)
-                return;
 
             h1.Next = h6;
             h6.Prev = h1;

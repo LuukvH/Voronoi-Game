@@ -8,8 +8,8 @@ namespace Voronoi
 {
     public enum SweepEventTypes
     {
-        StartPoint,
         Endpoint,
+        StartPoint,
         Crossing
     }
 }

@@ -57,6 +57,7 @@
     </ApplicationDefinition>
     <Compile Include="Edge.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="LogEntry.cs" />
     <Compile Include="SweepEvent.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="Graph.cs" />

@@ -7,7 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="400.954" Width="882.991" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid>
-        <Canvas x:Name="canvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MouseDown="canvas_MouseDown" Background="White"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+        <Canvas x:Name="canvas" Grid.Column="0" MouseDown="canvas_MouseDown" Background="White">
+            
+        </Canvas>
+        <DataGrid x:Name="dataGrid" Grid.Column="1" AutoGenerateColumns="True" SelectionChanged="dataGrid_SelectionChanged" />
+
 
     </Grid>
 </Window>

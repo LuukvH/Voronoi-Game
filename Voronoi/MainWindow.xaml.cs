@@ -24,11 +24,9 @@ namespace Voronoi
         HalfEdge selected;
         Graph graph = new Graph();
 
-        bool testing = false;
         bool drawcircles = false;
         bool drawfaces = false;
         bool drawlines = false;
-
 
         float marginleft = 100;
         float margintop = 300;
@@ -42,6 +40,9 @@ namespace Voronoi
             selected = graph.HalfEdges[0];
 
             Redraw();
+
+            // Add items to log
+            dataGrid.ItemsSource = graph.Log;
         }
 
         private List<Brush> _brushes;
@@ -125,7 +126,6 @@ namespace Voronoi
 
         public void Redraw()
         {
-
             canvas.Children.Clear();
 
             if (drawfaces)
@@ -207,7 +207,7 @@ namespace Voronoi
                 {
                     line.StrokeThickness = 4;
                     line.Stroke = System.Windows.Media.Brushes.Yellow;
-                    Canvas.SetZIndex(line, 2);
+                    Canvas.SetZIndex(line, 5);
                 }
 
                 //halfEdge.Line = line;
@@ -215,11 +215,8 @@ namespace Voronoi
             }
         }
 
-        public void DrawPoint(Vertex v, Color color)
+        public void DrawVertex(Vertex v, Color color)
         {
-            // Create a StackPanel to contain the shape.
-            StackPanel myStackPanel = new StackPanel();
-
             // Create a red Ellipse.
             Ellipse myEllipse = new Ellipse();
 
@@ -254,6 +251,8 @@ namespace Voronoi
             Console.Out.WriteLine("Start");
             foreach (HalfEdge halfEdge in graph.HalfEdges)
             {
+                if (halfEdge.Twin == null)
+                    continue;
 
                 Face f1 = halfEdge.Face;
                 Face f2 = halfEdge.Twin.Face;
@@ -266,69 +265,8 @@ namespace Voronoi
                     Vertex v1 = t1.Circumcenter();
                     Vertex v2 = t2.Circumcenter();
 
-                    // Order v1 and v2 on y;
                     Edge edge = new Edge(v1, v2);
-                    SweepEvent se1 = new SweepEvent(edge.v1, SweepEventTypes.StartPoint) { obj = edge };
-                    SweepEvent se2 = new SweepEvent(edge.v2, SweepEventTypes.Endpoint) { obj = edge };
-
-                    sweepEvents.Add(se1);
-                    sweepEvents.Add(se2);
                     edges.Add(edge);
-                }
-            }
-
-            sweepEvents = sweepEvents.OrderByDescending(e => e.Vertex.y).ToList();
-
-            // Sweepline
-            if (testing)
-            {
-                foreach (SweepEvent sweepEvent in sweepEvents)
-                {
-                    if (sweepEvent.SweepEventType == SweepEventTypes.StartPoint)
-                    {
-                        Edge edge = sweepEvent.obj as Edge;
-                        status.Add(edge);
-                        status = status.OrderBy(e => e.v1.x).ToList();
-
-                        int i = status.IndexOf(edge);
-
-                        // Check for crossings with left edge
-                        if (i > 0)
-                        {
-                            Edge ledge = status[i - 1];
-
-                            Vertex crossing;
-                            if (edge.Intersect(ledge, out crossing))
-                            {
-                                DrawPoint(crossing, Colors.Red);
-
-                                edge.v2 = crossing;
-                                ledge.v2 = crossing;
-                                sweepEvents = sweepEvents.OrderByDescending(e => e.Vertex.y).ToList();
-                            }
-                        }
-
-                        if (i < status.Count - 1)
-                        {
-                            Edge redge = status[i + 1];
-
-                            Vertex crossing;
-                            if (edge.Intersect(redge, out crossing))
-                            {
-                                DrawPoint(crossing, Colors.Red);
-
-                                edge.v2 = crossing;
-                                redge.v2 = crossing;
-                                sweepEvents = sweepEvents.OrderByDescending(e => e.Vertex.y).ToList();
-                            }
-                        }
-                    }
-
-                    if (sweepEvent.SweepEventType == SweepEventTypes.Endpoint)
-                    {
-                        Edge edge = sweepEvent.obj as Edge;
-                        status.Remove(edge);
-                    }
                 }
             }
 
@@ -339,13 +277,17 @@ namespace Voronoi
                 line.Visibility = System.Windows.Visibility.Visible;
                 line.StrokeThickness = 2;
                 line.Stroke = System.Windows.Media.Brushes.LightGreen;
-                line.X1 = edge.v1.x + marginleft;
-                line.X2 = edge.v2.x + marginleft;
-                line.Y1 = 300 - edge.v1.y;
-                line.Y2 = 300 - edge.v2.y;
+                try {
+                    line.X1 = edge.v1.x + marginleft;
+                    line.X2 = edge.v2.x + marginleft;
+                    line.Y1 = 300 - edge.v1.y;
+                    line.Y2 = 300 - edge.v2.y;
 
-                //halfEdge.Line = line;
-                canvas.Children.Add(line);
+
+                    //halfEdge.Line = line;
+                    canvas.Children.Add(line);
+                }
+                catch { }
             }
         }
 
@@ -357,12 +299,6 @@ namespace Voronoi
             if (e.Key == Key.C)
             {
                 drawcircles = !drawcircles;
-                Redraw();
-            }
-
-            if (e.Key == Key.T)
-            {
-                testing = !testing;
                 Redraw();
             }
 
@@ -384,7 +320,16 @@ namespace Voronoi
             }
 
             if (e.Key == Key.N)
-                he = selected.Next;
+            {
+                if (selected == null)
+                {
+                    selected = graph.HalfEdges.First();
+                }
+                else
+                {
+                    he = selected.Next;
+                }
+            }
 
             if (e.Key == Key.P)
                 he = selected.Prev;
@@ -418,6 +363,121 @@ namespace Voronoi
             graph.AddVertex(vertex);
 
             Redraw();
+        }
+
+        private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // On event selection
+
+            selected = null;
+            LogEntry entry = e.AddedItems[0] as LogEntry;
+
+            Redraw();
+            foreach (Object obj in entry.objects)
+            {
+                if (obj is Face)
+                {
+                    DrawFace(obj as Face);
+                }
+
+                if (obj is Triangle)
+                {                    
+                    DrawCircumcenter(obj as Triangle);
+                }
+
+                if (obj is HalfEdge)
+                {
+                    DrawEdge(obj as HalfEdge, Colors.Yellow);
+                    selected = obj as HalfEdge;
+                }
+
+                if (obj is Vertex)
+                {
+                    DrawVertex(obj as Vertex, Colors.Red);
+                }
+            }
+        }
+
+        private void DrawEdge(HalfEdge halfEdge, Color color)
+        {
+            SolidColorBrush mySolidColorBrush = new SolidColorBrush();
+            mySolidColorBrush.Color = color;
+            
+            Line line = new Line();
+            line.Visibility = System.Windows.Visibility.Visible;
+            line.StrokeThickness = 5;
+            line.Stroke = mySolidColorBrush;
+            line.X1 = halfEdge.Origin.x + marginleft;
+            line.X2 = halfEdge.Next.Origin.x + marginleft;
+            line.Y1 = 300 - halfEdge.Origin.y;
+            line.Y2 = 300 - halfEdge.Next.Origin.y;
+            
+            //halfEdge.Line = line;
+            canvas.Children.Add(line);
+        }
+
+        private void DrawFace(Face face)
+        {
+            Polygon p = new Polygon();
+            p.Stroke = Brushes.Black;
+
+            p.Fill = Brushes.LightYellow;
+
+            p.StrokeThickness = 1;
+            p.HorizontalAlignment = HorizontalAlignment.Left;
+            p.VerticalAlignment = VerticalAlignment.Center;
+
+            p.Points = new PointCollection();
+
+            HalfEdge s = face.HalfEdge;
+            HalfEdge h = face.HalfEdge;
+            do
+            {
+                p.Points.Add(new Point(marginleft + h.Origin.x, margintop - h.Origin.y));
+                h = h.Next;
+            }
+            while (s != h);
+
+            canvas.Children.Add(p);
+        }
+
+        public void DrawCircumcenter(Triangle triangle)
+        {
+            // Create a red Ellipse.
+            Ellipse myEllipse = new Ellipse();
+            Ellipse centre = new Ellipse();
+
+            // Create a SolidColorBrush with a red color to fill the 
+            // Ellipse with.
+            SolidColorBrush mySolidColorBrush = new SolidColorBrush();
+
+            // Describes the brush's color using RGB values. 
+            // Each value has a range of 0-255.
+            mySolidColorBrush.Color = Colors.LightPink;
+            myEllipse.Stroke = mySolidColorBrush;
+            centre.Fill = mySolidColorBrush;
+
+            Vertex c = triangle.Circumcenter();
+            float d = triangle.Diameter();
+
+            // Set the width and height of the Ellipse.
+            myEllipse.Width = d * 2;
+            myEllipse.Height = d * 2;
+
+            centre.Width = 10;
+            centre.Height = 10;
+
+            Canvas.SetLeft(myEllipse, c.x - d + marginleft);
+            Canvas.SetTop(myEllipse, 300 - c.y - d);
+            Canvas.SetZIndex(myEllipse, 3);
+
+            Canvas.SetLeft(centre, c.x - 5 + marginleft);
+            Canvas.SetTop(centre, 300 - c.y - 5);
+            Canvas.SetZIndex(centre, 3);
+
+            // Add the Ellipse to the StackPanel.
+            canvas.Children.Add(myEllipse);
+            canvas.Children.Add(centre);
         }
     }
 }
