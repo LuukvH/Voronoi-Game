@@ -8,24 +8,21 @@ namespace Voronoi
 {
     public class Triangulation : Graph
     {
-        public bool AddVertex(Vertex vertex)
+        public override bool AddVertex(Vertex vertex)
         {
             Face face = FindFace(vertex);
 
             if (face == null)
                 return false;
-            
+
+            base.AddVertex(vertex);
+
             return true;
         }
 
         protected void AddVertex(Face face, Vertex vertex)
         {
-            vertices.Add(vertex);
-
-            LogEntry logEntry = new LogEntry("Adding vertex.", this);
-            logEntry.objects.Add(vertex);
-            Log.Add(logEntry);
-
+            base.AddVertex(vertex);
             base.faces.Remove(face);
 
             HalfEdge h1 = face.HalfEdge;
@@ -73,7 +70,7 @@ namespace Voronoi
             faces.Add(new Triangle(h2));
             faces.Add(new Triangle(h3));
 
-            logEntry = new LogEntry("Adding edges.", this);
+            LogEntry logEntry = new LogEntry("Adding edges.", this);
             logEntry.objects.Add(vertex);
             Log.Add(logEntry);
         }

@@ -22,10 +22,10 @@ namespace Voronoi
 
         public void Create()
         {
-            Vertex v1 = new Vertex(20, 0);
-            Vertex v2 = new Vertex(200, 180);
-            Vertex v3 = new Vertex(20, 180);
-            Vertex v4 = new Vertex(200, 0);
+            Vertex v1 = new Vertex(-2000, -2000);
+            Vertex v2 = new Vertex(2000, 2000);
+            Vertex v3 = new Vertex(-2000, 2000);
+            Vertex v4 = new Vertex(2000, -2000);
             vertices.AddRange(new List<Vertex>() { v1, v2, v3, v4 });
 
             HalfEdge h1 = new HalfEdge(v1);
@@ -97,6 +97,17 @@ namespace Voronoi
             }
 
             return null;
+        }
+
+        public virtual bool AddVertex(Vertex vertex)
+        {
+            Vertices.Add(vertex);
+
+            LogEntry logEntry = new LogEntry("Adding vertex.", this);
+            logEntry.objects.Add(vertex);
+            Log.Add(logEntry);
+
+            return true;
         }
 
     }

@@ -8,7 +8,7 @@ namespace Voronoi
 {
     public class Delaunay : Triangulation
     {
-        public new bool AddVertex(Vertex vertex)
+        public override bool AddVertex(Vertex vertex)
         {
             Triangle face = FindFace(vertex) as Triangle;
 
@@ -99,7 +99,7 @@ namespace Voronoi
             }
         }
         
-        public void Flip(HalfEdge h)
+        private void Flip(HalfEdge h)
         {
             HalfEdge h1 = h;
             HalfEdge h2 = h1.Next;

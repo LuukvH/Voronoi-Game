@@ -22,23 +22,19 @@ namespace Voronoi
     public partial class MainWindow : Window
     {
         HalfEdge selected;
-        Delaunay graph = new Delaunay();
+        Graph graph = new Delaunay();
 
         bool drawcircles = false;
-        bool drawfaces = true;
+        bool drawfaces = false;
         bool drawedges = false;
-        bool drawvoronoi = false;
-
-        float marginleft = 100;
-        float margintop = 300;
-
+        bool drawvoronoi = true;
+        
         public MainWindow()
         {
             InitializeComponent();
             InitBrushes();
 
             graph.Create();
-            selected = graph.HalfEdges[0];
 
             DrawGraph(graph);
 
@@ -101,11 +97,10 @@ namespace Voronoi
                 line.Stroke = System.Windows.Media.Brushes.LightGreen;
                 try
                 {
-                    line.X1 = edge.v1.X + marginleft;
-                    line.X2 = edge.v2.X + marginleft;
-                    line.Y1 = 300 - edge.v1.Y;
-                    line.Y2 = 300 - edge.v2.Y;
-
+                    line.X1 = edge.v1.X;
+                    line.X2 = edge.v2.X;
+                    line.Y1 = edge.v1.Y;
+                    line.Y2 = edge.v2.Y;
 
                     //halfEdge.Line = line;
                     canvas.Children.Add(line);
@@ -131,12 +126,6 @@ namespace Voronoi
                 DrawGraph(graph);
             }
 
-            if (e.Key == Key.Q)
-            {
-                if (selected != null)
-                graph.Flip(selected);
-            }
-
             if (e.Key == Key.L)
             {
                 drawedges = !drawedges;
@@ -154,7 +143,20 @@ namespace Voronoi
                 DrawGraph(graph);
             }
 
-            if (e.Key == Key.N)
+            if (e.Key == Key.G)
+            {
+                Random r = new Random();
+
+                for (int i = 0; i < 500; i++)
+                {
+                    int x = r.Next(Convert.ToInt32(canvas.ActualWidth));
+                    int y = r.Next(Convert.ToInt32(canvas.ActualHeight));
+                    graph.AddVertex(new Vertex(x, y));
+                }
+                DrawGraph(graph);
+            }
+
+                if (e.Key == Key.N)
             {
                 if (selected == null)
                 {
@@ -185,7 +187,7 @@ namespace Voronoi
         int t = 0;
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Vertex vertex = new Vertex(Convert.ToInt32(e.GetPosition(canvas).X) - marginleft, 300 - Convert.ToInt32(e.GetPosition(canvas).Y));
+            Vertex vertex = new Vertex(Convert.ToInt32(e.GetPosition(canvas).X), Convert.ToInt32(e.GetPosition(canvas).Y));
 
             canvas.Children.Clear();
 
@@ -249,7 +251,7 @@ namespace Voronoi
                     if (face.Color == Colors.Transparent)
                         face.Color = GetRandomColor();
 
-                    DrawFace(face, Colors.Transparent);
+                    DrawFace(face, face.Color);
                 }
             }
 
@@ -309,8 +311,8 @@ namespace Voronoi
             myEllipse.Width = 10;
             myEllipse.Height = 10;
 
-            Canvas.SetLeft(myEllipse, v.X - 5 + marginleft);
-            Canvas.SetTop(myEllipse, 300 - v.Y - 5);
+            Canvas.SetLeft(myEllipse, v.X - 5);
+            Canvas.SetTop(myEllipse, v.Y - 5);
             Canvas.SetZIndex(myEllipse, 3);
 
             // Add the Ellipse to the StackPanel.
@@ -336,10 +338,10 @@ namespace Voronoi
             line.Visibility = System.Windows.Visibility.Visible;
             line.StrokeThickness = thickness;
             line.Stroke = mySolidColorBrush;
-            line.X1 = v1.X + marginleft;
-            line.X2 = v2.X + marginleft;
-            line.Y1 = 300 - v1.Y;
-            line.Y2 = 300 - v2.Y;
+            line.X1 = v1.X;
+            line.X2 = v2.X;
+            line.Y1 = v1.Y;
+            line.Y2 = v2.Y;
 
             //halfEdge.Line = line;
             canvas.Children.Add(line);
@@ -365,7 +367,7 @@ namespace Voronoi
             p.Points = new PointCollection();
             foreach (Vertex vertex in face.Vertices)
             {
-                p.Points.Add(new Point(marginleft + vertex.X, margintop - vertex.Y));
+                p.Points.Add(new Point(vertex.X, vertex.Y));
             }
 
             canvas.Children.Add(p);
@@ -397,12 +399,12 @@ namespace Voronoi
             centre.Width = 10;
             centre.Height = 10;
 
-            Canvas.SetLeft(myEllipse, c.X - d + marginleft);
-            Canvas.SetTop(myEllipse, 300 - c.Y - d);
+            Canvas.SetLeft(myEllipse, c.X - d);
+            Canvas.SetTop(myEllipse, c.Y - d);
             Canvas.SetZIndex(myEllipse, 3);
 
-            Canvas.SetLeft(centre, c.X - 5 + marginleft);
-            Canvas.SetTop(centre, 300 - c.Y - 5);
+            Canvas.SetLeft(centre, c.X - 5);
+            Canvas.SetTop(centre, c.Y - 5);
             Canvas.SetZIndex(centre, 3);
 
             // Add the Ellipse to the StackPanel.
