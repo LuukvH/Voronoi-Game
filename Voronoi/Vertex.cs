@@ -8,62 +8,69 @@ namespace Voronoi
 {
     public class Vertex
     {
-
-        public float x;
-        public float y;
+        
+        public float X;
+        public float Y;
 
         public Vertex()
         {
-            x = float.NaN;
-            y = float.NaN;
+            X = float.NaN;
+            Y = float.NaN;
         }
 
-        public Vertex (float x, float y)
+        public Vertex (float X, float Y)
         {
-            this.x = x;
-            this.y = y;
+            this.X = X;
+            this.Y = Y;
         }
 
         public Vertex(Vertex v)
         {
-            x = v.x;
-            y = v.y;
+            X = v.X;
+            Y = v.Y;
         }
 
         public bool isNan()
         {
-            return float.IsNaN(x) || float.IsNaN(y);
+            return float.IsNaN(X) || float.IsNaN(Y);
+        }
+
+        public float DeltaSquaredXY(Vertex t)
+        {
+            float dx = (X - t.X);
+            float dy = (Y - t.Y);
+            return (dx * dx) + (dy * dy);
         }
 
         #region Operators
         public static Vertex operator -(Vertex v, Vertex w)
         {
-            return new Vertex(v.x - w.x, v.y - w.y);
+            return new Vertex(v.X - w.X, v.Y - w.Y);
         }
 
         public static Vertex operator +(Vertex v, Vertex w)
         {
-            return new Vertex(v.x + w.x, v.y + w.y);
+            return new Vertex(v.X + w.X, v.Y + w.Y);
         }
 
         public static float operator *(Vertex v, Vertex w)
         {
-            return v.x * w.x + v.y * w.y;
+            return v.X * w.X + v.Y * w.Y;
         }
 
         public static Vertex operator *(Vertex v, float mult)
         {
-            return new Vertex(v.x * mult, v.y * mult);
+            return new Vertex(v.X * mult, v.Y * mult);
         }
 
         public static Vertex operator *(float mult, Vertex v)
         {
-            return new Vertex(v.x * mult, v.y * mult);
+            return new Vertex(v.X * mult, v.Y * mult);
         }
 
         public float Cross(Vertex v)
         {
-            return x * v.y - y * v.x;
+            return X * v.Y - Y * v.X;
         }
         #endregion
 

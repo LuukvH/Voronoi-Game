@@ -55,18 +55,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Delaunay.cs" />
     <Compile Include="Edge.cs" />
-    <Compile Include="Extensions.cs" />
     <Compile Include="LogEntry.cs" />
-    <Compile Include="SweepEvent.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="HalfEdge.cs" />
-    <Compile Include="SweepEventTypes.cs" />
+    <Compile Include="IncorrectTriangleException.cs" />
     <Compile Include="Triangle.cs" />
+    <Compile Include="Triangulation.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Vertex.cs" />
-    <Compile Include="Voronois.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

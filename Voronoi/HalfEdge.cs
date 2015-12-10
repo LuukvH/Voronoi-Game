@@ -13,7 +13,7 @@ namespace Voronoi
 
         public HalfEdge(Vertex v)
         {
-            origin = new Vertex(v.x, v.y);
+            origin = new Vertex(v.X, v.Y);
             
             Twin = null;
             Next = null;
@@ -23,7 +23,7 @@ namespace Voronoi
         public Vertex Origin
         {
             get { return origin; }
-            set { origin = new Vertex(value.x, value.y); }
+            set { origin = new Vertex(value.X, value.Y); }
         }
 
         public Face Face;

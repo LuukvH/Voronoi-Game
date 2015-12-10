@@ -9,31 +9,45 @@ namespace Voronoi
 {
     public class Face
     {
+        protected List<Vertex> vertices = new List<Vertex>();
+
         public Face(HalfEdge halfEdge)
         {
             this.HalfEdge = halfEdge;
-            this.Brush = null;
+            this.Color = Colors.Transparent;
         }
 
-        public HalfEdge HalfEdge;
-
-        public Brush Brush;
-
-        public bool inside(Vertex a_u1)
+        public List<Vertex> Vertices
         {
-            int i = 0;
-            int j = 0;
-            bool inside = false;
-
-            List<HalfEdge> halfEdges = new List<HalfEdge>() { HalfEdge, HalfEdge.Next, HalfEdge.Next.Next };
-
-            for (i = 0, j = 2; i < 3; j = i++)
-            {
-                if (((halfEdges[i].Origin.y > a_u1.y) != (halfEdges[j].Origin.y > a_u1.y)) &&
-                 (a_u1.x < (halfEdges[j].Origin.x - halfEdges[i].Origin.x) * (a_u1.y - halfEdges[i].Origin.y) / (halfEdges[j].Origin.y - halfEdges[i].Origin.y) + halfEdges[i].Origin.x))
-                    inside = !inside;
-            }
-            return inside;
+            get { return vertices; }
         }
+
+        public HalfEdge HalfEdge { get; private set; }
+
+        public Color Color;
+
+        public bool Contains(Vertex vertex)
+        {
+            return vertices.Contains(vertex);
+        }
+
+        public bool inside (Vertex p)
+        {
+            int i, j = vertices.Count - 1;
+            bool oddNodes = false;
+
+            for (i = 0; i < vertices.Count; i++)
+            {
+                if ((vertices[i].Y < p.Y && vertices[j].Y >= p.Y
+                || vertices[j].Y < p.Y && vertices[i].Y >= p.Y)
+                && (vertices[i].X <= p.X || vertices[j].X <= p.X))
+                {
+                    oddNodes ^= (vertices[i].X + (p.Y - vertices[i].Y) / (vertices[j].Y - vertices[i].Y) * (vertices[j].X - vertices[i].X) < p.X);
+                }
+                j = i;
+            }
+
+            return oddNodes;
+        }        
     }
 }
