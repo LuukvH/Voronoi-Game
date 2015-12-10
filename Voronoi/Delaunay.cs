@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Voronoi
 {
@@ -24,11 +20,11 @@ namespace Voronoi
 
             // Log registration for playback
             LogEntry logEntry = new LogEntry("Select edges for delauney check", this);
-            logEntry.objects.Add(vertex);
-            logEntry.objects.Add(new Edge(h1.Origin, h1.Next.Origin));
-            logEntry.objects.Add(new Edge(h2.Origin, h2.Next.Origin));
-            logEntry.objects.Add(new Edge(h3.Origin, h3.Next.Origin));
-            log.Add(logEntry);
+            logEntry.Objects.Add(vertex);
+            logEntry.Objects.Add(new Edge(h1.Origin, h1.Next.Origin));
+            logEntry.Objects.Add(new Edge(h2.Origin, h2.Next.Origin));
+            logEntry.Objects.Add(new Edge(h3.Origin, h3.Next.Origin));
+            Log.Add(logEntry);
 
             // Flip if needed
             LegalizeEdge(vertex, h1, h1.Face as Triangle);
@@ -40,46 +36,48 @@ namespace Voronoi
 
         private void LegalizeEdge(Vertex vertex, HalfEdge halfEdge, Triangle triangle)
         {
+            if (vertex == null) throw new ArgumentNullException(nameof(vertex));
+
             if (triangle == null)
                 return;
 
             LogEntry logEntry = new LogEntry("Checking edge", this);
             //logEntry.objects.Add(vertex);
-            logEntry.objects.Add(halfEdge.Face);
-            logEntry.objects.Add(new Edge(halfEdge.Origin, halfEdge.Next.Origin));
-            log.Add(logEntry);
+            logEntry.Objects.Add(halfEdge.Face);
+            logEntry.Objects.Add(new Edge(halfEdge.Origin, halfEdge.Next.Origin));
+            Log.Add(logEntry);
 
             // Points to test
             Vertex v1 = halfEdge.Twin.Next.Next.Origin;
             Vertex v2 = halfEdge.Next.Twin.Next.Next.Origin;
             Vertex v3 = halfEdge.Next.Next.Twin.Next.Next.Origin;
 
-            logEntry.objects.Add(v1);
-            logEntry.objects.Add(v2);
-            logEntry.objects.Add(v3);
+            logEntry.Objects.Add(v1);
+            logEntry.Objects.Add(v2);
+            logEntry.Objects.Add(v3);
 
             if (triangle.InsideCircumcenter(v1))
             {
-                logEntry = new LogEntry("Found point inside circumcenter", this);
-                logEntry.objects.Add(v1);
-                logEntry.objects.Add(halfEdge.Face);
-                log.Add(logEntry);
+                logEntry = new LogEntry("Found point Inside circumcenter", this);
+                logEntry.Objects.Add(v1);
+                logEntry.Objects.Add(halfEdge.Face);
+                Log.Add(logEntry);
             }
 
             if (triangle.InsideCircumcenter(v2))
             {
-                logEntry = new LogEntry("Found point inside circumcenter", this);
-                logEntry.objects.Add(v2);
-                logEntry.objects.Add(halfEdge.Face);
-                log.Add(logEntry);
+                logEntry = new LogEntry("Found point Inside circumcenter", this);
+                logEntry.Objects.Add(v2);
+                logEntry.Objects.Add(halfEdge.Face);
+                Log.Add(logEntry);
             }
 
             if (triangle.InsideCircumcenter(v3))
             {
-                logEntry = new LogEntry("Found point inside circumcenter", this);
-                logEntry.objects.Add(v3);
-                logEntry.objects.Add(halfEdge.Face);
-                log.Add(logEntry);
+                logEntry = new LogEntry("Found point Inside circumcenter", this);
+                logEntry.Objects.Add(v3);
+                logEntry.Objects.Add(halfEdge.Face);
+                Log.Add(logEntry);
             }
 
             if (triangle.InsideCircumcenter(v1) || triangle.InsideCircumcenter(v2) || triangle.InsideCircumcenter(v3))
@@ -90,15 +88,15 @@ namespace Voronoi
                 Flip(halfEdge);
 
                 logEntry = new LogEntry("Select recursive flip edges", this);
-                logEntry.objects.Add(new Edge(h1.Origin, h1.Next.Origin));
-                logEntry.objects.Add(new Edge(h2.Origin, h2.Next.Origin));
-                log.Add(logEntry);
+                logEntry.Objects.Add(new Edge(h1.Origin, h1.Next.Origin));
+                logEntry.Objects.Add(new Edge(h2.Origin, h2.Next.Origin));
+                Log.Add(logEntry);
 
                 LegalizeEdge(vertex, h1.Twin, h1.Twin.Face as Triangle);
                 LegalizeEdge(vertex, h2.Twin, h2.Twin.Face as Triangle);
             }
         }
-        
+
         private void Flip(HalfEdge h)
         {
             HalfEdge h1 = h;
@@ -112,12 +110,12 @@ namespace Voronoi
                 return;
 
             LogEntry logEntry = new LogEntry("Flipping edge", this);
-            logEntry.objects.Add(new Edge(h.Origin, h.Next.Origin));
-            log.Add(logEntry);
+            logEntry.Objects.Add(new Edge(h.Origin, h.Next.Origin));
+            Log.Add(logEntry);
 
             // Remove old faces
-            faces.Remove(h.Face);
-            faces.Remove(h.Twin.Face);
+            Faces.Remove(h.Face);
+            Faces.Remove(h.Twin.Face);
 
             h1.Next = h6;
             h6.Prev = h1;
@@ -135,8 +133,8 @@ namespace Voronoi
             h4.Prev = h5;
             h4.Origin = h6.Origin;
 
-            faces.Add(new Triangle(h1));
-            faces.Add(new Triangle(h1.Twin));
+            Faces.Add(new Triangle(h1));
+            Faces.Add(new Triangle(h1.Twin));
         }
     }
 }

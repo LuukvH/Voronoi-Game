@@ -1,24 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Voronoi
 {
     public class LogEntry
     {
-        public LogEntry(String text, Graph graph)
+        public List<object> Objects = new List<object>();
+
+        public Graph State;
+
+        public LogEntry(string text, Graph graph)
         {
-            this.Message = text;
+            Message = text;
 
             State = new Graph();
             State.Vertices.AddRange(graph.Vertices);
             State.Faces.AddRange(graph.Faces);
         }
 
-        public Graph State;
-        public String Message { get; private set; }
-        public List<Object> objects = new List<Object>();
+        public string Message { get; private set; }
     }
 }

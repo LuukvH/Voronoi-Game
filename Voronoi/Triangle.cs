@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Voronoi
+﻿namespace Voronoi
 {
     public class Triangle : Face
     {
+        private bool _calculatedCircumcenter;
+        private bool _calculatedCircumcenterRangeSquared;
+
+        private Vertex _circumcenter;
+
+        private float _circumcenterRangeSquared;
+
         public Triangle(HalfEdge halfEdge) : base(halfEdge)
         {
             Vertex v1 = HalfEdge.Origin;
@@ -27,94 +28,88 @@ namespace Voronoi
             halfEdge.Next.Next.Face = this;
 
             // Add vertices to the array
-            vertices.Add(v1);
-            vertices.Add(v2);
-            vertices.Add(v3);
+            Vertices.Add(v1);
+            Vertices.Add(v2);
+            Vertices.Add(v3);
         }
-        
-        private Vertex calculateCircumcenter()
+
+        public Vertex Circumcenter
+        {
+            get
+            {
+                if (_calculatedCircumcenter)
+                    return _circumcenter;
+
+                _circumcenter = CalculateCircumcenter();
+                _calculatedCircumcenter = true;
+
+                return _circumcenter;
+            }
+        }
+
+        public float CircumcenterRangeSquared
+        {
+            get
+            {
+                if (_calculatedCircumcenterRangeSquared)
+                    return _circumcenterRangeSquared;
+
+                _circumcenterRangeSquared = Vertices[0].DeltaSquaredXy(Circumcenter);
+                _calculatedCircumcenterRangeSquared = true;
+
+                return _circumcenterRangeSquared;
+            }
+        }
+
+        private Vertex CalculateCircumcenter()
         {
             Vertex v1 = Vertices[0];
             Vertex v2 = Vertices[1];
             Vertex v3 = Vertices[2];
 
             // Todo: Here we should add some x1-x2 > 0 logic to choose one of these, instead of trying
-            Vertex c = calculateCircumcenterT(v1, v2, v3);
+            Vertex c = CalculateCircumcenterT(v1, v2, v3);
 
-            if (c.isNan())
-                c = calculateCircumcenterT(v2, v3, v1);
+            if (c.IsNan())
+                c = CalculateCircumcenterT(v2, v3, v1);
 
-            if (c.isNan())
-                c = calculateCircumcenterT(v3, v1, v2);
+            if (c.IsNan())
+                c = CalculateCircumcenterT(v3, v1, v2);
 
             return c;
         }
 
-        private Vertex calculateCircumcenterT(Vertex a, Vertex b, Vertex c)
+        private Vertex CalculateCircumcenterT(Vertex a, Vertex b, Vertex c)
         {
             // determine midpoints (average of x & y coordinates)
-            Vertex midAB = Utility.Midpoint(a, b);
-            Vertex midBC = Utility.Midpoint(b, c);
+            Vertex midAb = Utility.Midpoint(a, b);
+            Vertex midBc = Utility.Midpoint(b, c);
 
             // determine slope
             // we need the negative reciprocal of the slope to get the slope of the perpendicular bisector
-            float slopeAB = -1 / Utility.Slope(a, b);
-            float slopeBC = -1 / Utility.Slope(b, c);
+            float slopeAb = -1/Utility.Slope(a, b);
+            float slopeBc = -1/Utility.Slope(b, c);
 
             // y = mx + b
             // solve for b
-            float bAB = midAB.Y - slopeAB * midAB.X;
-            float bBC = midBC.Y - slopeBC * midBC.X;
+            float bAb = midAb.Y - slopeAb*midAb.X;
+            float bBc = midBc.Y - slopeBc*midBc.X;
 
             // solve for x & y
             // x = (b1 - b2) / (m2 - m1)
-            float x = (bAB - bBC) / (slopeBC - slopeAB);
+            float x = (bAb - bBc)/(slopeBc - slopeAb);
 
             Vertex circumcenter = new Vertex(
                 x,
-                (slopeAB * x) + bAB
-            );
+                slopeAb*x + bAb
+                );
 
             return circumcenter;
         }
 
         public bool InsideCircumcenter(Vertex vertex)
         {
-            return (Circumcenter.DeltaSquaredXY(vertex) < CircumcenterRangeSquared);
-        }
-
-        private Vertex circumcenter;
-        private bool calculatedCircumcenter = false;
-        public Vertex Circumcenter
-        {
-            get
-            {
-                if (calculatedCircumcenter)
-                    return circumcenter;
-
-                circumcenter = calculateCircumcenter();
-                calculatedCircumcenter = true;
-
-                return circumcenter;
-            }
-        }
-
-        private float circumcenterRangeSquared;
-        private bool calculatedCircumcenterRangeSquared = false;
-        public float CircumcenterRangeSquared
-        {
-            get
-            {
-                if (calculatedCircumcenterRangeSquared)
-                    return circumcenterRangeSquared;
-
-                circumcenterRangeSquared = vertices[0].DeltaSquaredXY(Circumcenter);
-                calculatedCircumcenterRangeSquared = true;
-
-                return circumcenterRangeSquared;
-            }
+            return Circumcenter.DeltaSquaredXy(vertex) < CircumcenterRangeSquared;
         }
     }
 }
-
-

@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Voronoi
+﻿namespace Voronoi
 {
     public class Edge
     {
+        public Vertex V1;
+        public Vertex V2;
+
         public Edge(Vertex v1, Vertex v2)
         {
-            this.v1 = v1;
-            this.v2 = v2;
+            V1 = v1;
+            V2 = v2;
         }
-
-        public Vertex v1;
-        public Vertex v2;
-
     }
 }

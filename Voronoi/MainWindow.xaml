@@ -14,7 +14,7 @@
         <Canvas x:Name="canvas" Grid.Column="0" MouseDown="canvas_MouseDown" Background="White">
             
         </Canvas>
-        <DataGrid x:Name="dataGrid" Grid.Column="1" AutoGenerateColumns="True" SelectionChanged="dataGrid_SelectionChanged" />
+        <DataGrid x:Name="DataGrid" Grid.Column="1" AutoGenerateColumns="True" SelectionChanged="dataGrid_SelectionChanged" />
 
 
     </Grid>

@@ -1,53 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows.Media;
 
 namespace Voronoi
 {
     public class Face
     {
-        protected List<Vertex> vertices = new List<Vertex>();
+        public Color Color;
 
         public Face(HalfEdge halfEdge)
         {
-            this.HalfEdge = halfEdge;
-            this.Color = Colors.Transparent;
+            HalfEdge = halfEdge;
+            Color = Colors.Transparent;
         }
 
-        public List<Vertex> Vertices
-        {
-            get { return vertices; }
-        }
+        public List<Vertex> Vertices { get; } = new List<Vertex>();
 
         public HalfEdge HalfEdge { get; private set; }
 
-        public Color Color;
-
         public bool Contains(Vertex vertex)
         {
-            return vertices.Contains(vertex);
+            return Vertices.Contains(vertex);
         }
 
-        public bool inside (Vertex p)
+        public bool Inside(Vertex p)
         {
-            int i, j = vertices.Count - 1;
+            int i, j = Vertices.Count - 1;
             bool oddNodes = false;
 
-            for (i = 0; i < vertices.Count; i++)
+            for (i = 0; i < Vertices.Count; i++)
             {
-                if ((vertices[i].Y < p.Y && vertices[j].Y >= p.Y
-                || vertices[j].Y < p.Y && vertices[i].Y >= p.Y)
-                && (vertices[i].X <= p.X || vertices[j].X <= p.X))
-                {
-                    oddNodes ^= (vertices[i].X + (p.Y - vertices[i].Y) / (vertices[j].Y - vertices[i].Y) * (vertices[j].X - vertices[i].X) < p.X);
-                }
+                if (((Vertices[i].Y < p.Y && Vertices[j].Y >= p.Y) || (Vertices[j].Y < p.Y && Vertices[i].Y >= p.Y)) &&
+                    (Vertices[i].X <= p.X || Vertices[j].X <= p.X))
+                    oddNodes ^= Vertices[i].X +
+                                (p.Y - Vertices[i].Y)/(Vertices[j].Y - Vertices[i].Y)*(Vertices[j].X - Vertices[i].X) <
+                                p.X;
                 j = i;
             }
 
             return oddNodes;
-        }        
+        }
     }
 }

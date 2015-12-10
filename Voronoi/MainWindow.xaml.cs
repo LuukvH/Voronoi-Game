@@ -21,42 +21,41 @@ namespace Voronoi
     /// </summary>
     public partial class MainWindow : Window
     {
-        HalfEdge selected;
-        Graph graph = new Delaunay();
+        private HalfEdge _selected;
+        private readonly Graph _graph = new Delaunay();
 
-        bool drawcircles = false;
-        bool drawfaces = false;
-        bool drawedges = false;
-        bool drawvoronoi = true;
+        private bool _drawcircles = false;
+        private bool _drawfaces = false;
+        private bool _drawedges = false;
+        private bool _drawvoronoi = true;
         
         public MainWindow()
         {
             InitializeComponent();
             InitBrushes();
 
-            graph.Create();
+            _graph.Create();
 
-            DrawGraph(graph);
+            DrawGraph(_graph);
 
             // Add items to log
-            dataGrid.ItemsSource = graph.Log;
+            DataGrid.ItemsSource = _graph.Log;
         }
 
         private List<Color> _colors;
         private void InitBrushes()
         {
             _colors = new List<Color>();
-            var props = typeof(Colors).GetProperties(BindingFlags.Public | BindingFlags.Static);
-            foreach (var propInfo in props)
+            PropertyInfo[] props = typeof(Colors).GetProperties(BindingFlags.Public | BindingFlags.Static);
+            foreach (PropertyInfo propInfo in props)
             {
                 _colors.Add((Color)propInfo.GetValue(null, null));
             }
         }
 
-        private Random _rand = new Random();
+        private readonly Random _rand = new Random();
         private Color GetRandomColor()
         {
-            _rand.Next();
             return _colors[_rand.Next(_colors.Count)];
         }
 
@@ -65,28 +64,7 @@ namespace Voronoi
         // Testing only
         public void DrawVoronoi()
         {
-            List<Edge> edges = new List<Edge>();
-
-            foreach (HalfEdge halfEdge in graph.HalfEdges)
-            {
-                if (halfEdge.Twin == null)
-                    continue;
-
-                Face f1 = halfEdge.Face;
-                Face f2 = halfEdge.Twin.Face;
-
-                if (f1 is Triangle && f2 is Triangle)
-                {
-                    Triangle t1 = f1 as Triangle;
-                    Triangle t2 = f2 as Triangle;
-
-                    Vertex v1 = t1.Circumcenter;
-                    Vertex v2 = t2.Circumcenter;
-
-                    Edge edge = new Edge(v1, v2);
-                    edges.Add(edge);
-                }
-            }
+            List<Edge> edges = (from halfEdge in _graph.HalfEdges where halfEdge.Twin != null let f1 = halfEdge.Face let f2 = halfEdge.Twin.Face where f1 is Triangle && f2 is Triangle let t1 = f1 as Triangle let t2 = f2 as Triangle let v1 = t1.Circumcenter let v2 = t2.Circumcenter select new Edge(v1, v2)).ToList();
 
             foreach (Edge edge in edges)
             {
@@ -97,10 +75,10 @@ namespace Voronoi
                 line.Stroke = System.Windows.Media.Brushes.LightGreen;
                 try
                 {
-                    line.X1 = edge.v1.X;
-                    line.X2 = edge.v2.X;
-                    line.Y1 = edge.v1.Y;
-                    line.Y2 = edge.v2.Y;
+                    line.X1 = edge.V1.X;
+                    line.X2 = edge.V2.X;
+                    line.Y1 = edge.V1.Y;
+                    line.Y2 = edge.V2.Y;
 
                     //halfEdge.Line = line;
                     canvas.Children.Add(line);
@@ -109,38 +87,38 @@ namespace Voronoi
             }
         }
 
-        Brush brush = Brushes.Red;
+        private Brush _brush = Brushes.Red;
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             HalfEdge he = null;
 
             if (e.Key == Key.V)
             {
-                drawvoronoi = !drawvoronoi;
-                DrawGraph(graph);
+                _drawvoronoi = !_drawvoronoi;
+                DrawGraph(_graph);
             }
 
             if (e.Key == Key.C)
             {
-                drawcircles = !drawcircles;
-                DrawGraph(graph);
+                _drawcircles = !_drawcircles;
+                DrawGraph(_graph);
             }
 
             if (e.Key == Key.L)
             {
-                drawedges = !drawedges;
-                DrawGraph(graph);
+                _drawedges = !_drawedges;
+                DrawGraph(_graph);
             }
 
             if (e.Key == Key.F)
             {
-                drawfaces = !drawfaces;
-                DrawGraph(graph);
+                _drawfaces = !_drawfaces;
+                DrawGraph(_graph);
             }
 
             if (e.Key == Key.R)
             {
-                DrawGraph(graph);
+                DrawGraph(_graph);
             }
 
             if (e.Key == Key.G)
@@ -151,63 +129,63 @@ namespace Voronoi
                 {
                     int x = r.Next(Convert.ToInt32(canvas.ActualWidth));
                     int y = r.Next(Convert.ToInt32(canvas.ActualHeight));
-                    graph.AddVertex(new Vertex(x, y));
+                    _graph.AddVertex(new Vertex(x, y));
                 }
-                DrawGraph(graph);
+                DrawGraph(_graph);
             }
 
                 if (e.Key == Key.N)
             {
-                if (selected == null)
+                if (_selected == null)
                 {
-                    selected = graph.HalfEdges.First();
+                    _selected = _graph.HalfEdges.First();
                 }
                 else
                 {
-                    he = selected.Next;
+                    he = _selected.Next;
                 }
             }
 
             if (e.Key == Key.P)
-                he = selected.Prev;
+                he = _selected.Prev;
 
             if (e.Key == Key.T)
             {
-                he = selected.Twin;
+                he = _selected.Twin;
             }
 
             if (he != null)
             {
-                selected = he;
+                _selected = he;
             }
 
-            DrawGraph(graph);
+            DrawGraph(_graph);
         }
 
-        int t = 0;
+        private int _t = 0;
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Vertex vertex = new Vertex(Convert.ToInt32(e.GetPosition(canvas).X), Convert.ToInt32(e.GetPosition(canvas).Y));
 
             canvas.Children.Clear();
 
-            //selected = graph.FindFace(vertex).HalfEdge;
-            graph.AddVertex(vertex);
+            //_selected = _graph.FindFace(vertex).HalfEdge;
+            _graph.AddVertex(vertex);
 
-            DrawGraph(graph);
+            DrawGraph(_graph);
         }
 
         private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // On event selection
 
-            selected = null;
+            _selected = null;
             LogEntry entry = e.AddedItems[0] as LogEntry;
 
             canvas.Children.Clear();
             DrawGraph(entry.State);
 
-            foreach (Object obj in entry.objects)
+            foreach (object obj in entry.Objects)
             {
                 if (obj is Face)
                 {
@@ -223,7 +201,7 @@ namespace Voronoi
                 if (obj is HalfEdge)
                 {
                     DrawEdge(obj as HalfEdge, Colors.Yellow, 5);
-                    selected = obj as HalfEdge;
+                    _selected = obj as HalfEdge;
                 }
 
                 if (obj is Edge)
@@ -244,7 +222,7 @@ namespace Voronoi
         {
             canvas.Children.Clear();
 
-            if (drawfaces)
+            if (_drawfaces)
             {
                 foreach (Face face in graph.Faces)
                 {
@@ -255,7 +233,7 @@ namespace Voronoi
                 }
             }
 
-            if (drawedges)
+            if (_drawedges)
             {
                 foreach (HalfEdge halfEdge in graph.HalfEdges)
                 {
@@ -263,14 +241,14 @@ namespace Voronoi
                 }
             }
 
-            // Draw selected
-            if (selected != null)
+            // Draw _selected
+            if (_selected != null)
             {
-                DrawFace(selected.Face, Colors.LightYellow);
-                DrawEdge(selected, Colors.YellowGreen, 3);
+                DrawFace(_selected.Face, Colors.LightYellow);
+                DrawEdge(_selected, Colors.YellowGreen, 3);
             }
 
-            if (drawcircles)
+            if (_drawcircles)
             {
                 foreach (Face face in graph.Faces)
                 {
@@ -282,7 +260,7 @@ namespace Voronoi
                 }
             }
 
-            if (drawvoronoi)
+            if (_drawvoronoi)
             {
                 DrawVoronoi();
             }
@@ -326,7 +304,7 @@ namespace Voronoi
 
         private void DrawEdge(Edge edge, Color color, double thickness)
         {
-            DrawEdge(edge.v1, edge.v2, color, thickness);
+            DrawEdge(edge.V1, edge.V2, color, thickness);
         }
 
         private void DrawEdge(Vertex v1, Vertex v2, Color color, double thickness)

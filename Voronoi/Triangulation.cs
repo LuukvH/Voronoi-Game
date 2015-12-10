@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Voronoi
 {
@@ -23,7 +19,7 @@ namespace Voronoi
         protected void AddVertex(Face face, Vertex vertex)
         {
             base.AddVertex(vertex);
-            base.faces.Remove(face);
+            Faces.Remove(face);
 
             HalfEdge h1 = face.HalfEdge;
             HalfEdge h2 = h1.Next;
@@ -35,7 +31,7 @@ namespace Voronoi
             HalfEdge h7 = new HalfEdge(vertex);
             HalfEdge h8 = new HalfEdge(vertex);
             HalfEdge h9 = new HalfEdge(vertex);
-            halfEdges.AddRange(new List<HalfEdge>() { h4, h5, h6, h7, h8, h9 });
+            HalfEdges.AddRange(new List<HalfEdge> {h4, h5, h6, h7, h8, h9});
 
             h4.Twin = h7;
             h7.Twin = h4;
@@ -66,12 +62,12 @@ namespace Voronoi
             h9.Next = h3;
             h3.Prev = h9;
 
-            faces.Add(new Triangle(h1));
-            faces.Add(new Triangle(h2));
-            faces.Add(new Triangle(h3));
+            Faces.Add(new Triangle(h1));
+            Faces.Add(new Triangle(h2));
+            Faces.Add(new Triangle(h3));
 
             LogEntry logEntry = new LogEntry("Adding edges.", this);
-            logEntry.objects.Add(vertex);
+            logEntry.Objects.Add(vertex);
             Log.Add(logEntry);
         }
     }

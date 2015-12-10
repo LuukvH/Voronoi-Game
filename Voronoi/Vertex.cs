@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Voronoi
+﻿namespace Voronoi
 {
     public class Vertex
     {
-        
         public float X;
         public float Y;
 
@@ -18,10 +11,10 @@ namespace Voronoi
             Y = float.NaN;
         }
 
-        public Vertex (float X, float Y)
+        public Vertex(float x, float y)
         {
-            this.X = X;
-            this.Y = Y;
+            X = x;
+            Y = y;
         }
 
         public Vertex(Vertex v)
@@ -30,19 +23,20 @@ namespace Voronoi
             Y = v.Y;
         }
 
-        public bool isNan()
+        public bool IsNan()
         {
             return float.IsNaN(X) || float.IsNaN(Y);
         }
 
-        public float DeltaSquaredXY(Vertex t)
+        public float DeltaSquaredXy(Vertex t)
         {
-            float dx = (X - t.X);
-            float dy = (Y - t.Y);
-            return (dx * dx) + (dy * dy);
+            float dx = X - t.X;
+            float dy = Y - t.Y;
+            return dx*dx + dy*dy;
         }
 
         #region Operators
+
         public static Vertex operator -(Vertex v, Vertex w)
         {
             return new Vertex(v.X - w.X, v.Y - w.Y);
@@ -55,24 +49,24 @@ namespace Voronoi
 
         public static float operator *(Vertex v, Vertex w)
         {
-            return v.X * w.X + v.Y * w.Y;
+            return v.X*w.X + v.Y*w.Y;
         }
 
         public static Vertex operator *(Vertex v, float mult)
         {
-            return new Vertex(v.X * mult, v.Y * mult);
+            return new Vertex(v.X*mult, v.Y*mult);
         }
 
         public static Vertex operator *(float mult, Vertex v)
         {
-            return new Vertex(v.X * mult, v.Y * mult);
+            return new Vertex(v.X*mult, v.Y*mult);
         }
 
         public float Cross(Vertex v)
         {
-            return X * v.Y - Y * v.X;
+            return X*v.Y - Y*v.X;
         }
-        #endregion
 
+        #endregion
     }
 }
