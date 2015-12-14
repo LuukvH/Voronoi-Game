@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Windows.Media;
 
 namespace Voronoi
@@ -7,11 +8,17 @@ namespace Voronoi
     {
         public Color Color;
 
+        private static int nextid = 1;
+
         public Face(HalfEdge halfEdge)
         {
             HalfEdge = halfEdge;
             Color = Colors.Transparent;
+
+            Id = nextid++;
         }
+
+        public int Id { get; private set; }
 
         public List<Vertex> Vertices { get; } = new List<Vertex>();
 

@@ -2,9 +2,11 @@
 {
     public class Triangle : Face
     {
+        private bool _calculatedCenter;
         private bool _calculatedCircumcenter;
         private bool _calculatedCircumcenterRangeSquared;
 
+        private Vertex _center;
         private Vertex _circumcenter;
 
         private float _circumcenterRangeSquared;
@@ -31,6 +33,22 @@
             Vertices.Add(v1);
             Vertices.Add(v2);
             Vertices.Add(v3);
+        }
+
+        public Vertex Center
+        {
+            get
+            {
+                if (_calculatedCenter)
+                    return _center;
+
+                float x = (Vertices[0].X + Vertices[1].X + Vertices[2].X) / 3;
+                float y = (Vertices[0].Y + Vertices[1].Y + Vertices[2].Y) / 3;
+
+                _center = new Vertex(x, y);
+                _calculatedCenter = true;
+                return Center;
+            }
         }
 
         public Vertex Circumcenter

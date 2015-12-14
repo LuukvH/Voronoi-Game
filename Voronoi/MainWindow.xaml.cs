@@ -22,7 +22,7 @@ namespace Voronoi
     public partial class MainWindow : Window
     {
         private HalfEdge _selected;
-        private readonly Graph _graph = new Delaunay();
+        private Graph _graph = new Delaunay();
 
         private bool _drawcircles = false;
         private bool _drawfaces = false;
@@ -58,8 +58,6 @@ namespace Voronoi
         {
             return _colors[_rand.Next(_colors.Count)];
         }
-
-        
 
         // Testing only
         public void DrawVoronoi()
@@ -113,6 +111,12 @@ namespace Voronoi
             if (e.Key == Key.F)
             {
                 _drawfaces = !_drawfaces;
+                DrawGraph(_graph);
+            }
+
+            if (e.Key == Key.C)
+            {
+                _graph = new Delaunay();
                 DrawGraph(_graph);
             }
 
@@ -231,6 +235,14 @@ namespace Voronoi
 
                     DrawFace(face, face.Color);
                 }
+
+                foreach (Face face in graph.Faces)
+                {
+                    if (face is Triangle)
+                    {
+                        DrawLabel((face as Triangle).Center, String.Format("V{0:d}", face.Id));
+                    }
+                }
             }
 
             if (_drawedges)
@@ -333,22 +345,50 @@ namespace Voronoi
             SolidColorBrush solidColorBrush = new SolidColorBrush();
             solidColorBrush.Color = color;
 
-            Polygon p = new Polygon();
-            p.Stroke = Brushes.Black;
+            Polygon p = new Polygon
+            {
+                Stroke = Brushes.Black,
+                Fill = solidColorBrush,
+                StrokeThickness = 1,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Center,
+                Points = new PointCollection()
+            };
 
-            p.Fill = solidColorBrush;
-
-            p.StrokeThickness = 1;
-            p.HorizontalAlignment = HorizontalAlignment.Left;
-            p.VerticalAlignment = VerticalAlignment.Center;
-
-            p.Points = new PointCollection();
             foreach (Vertex vertex in face.Vertices)
             {
                 p.Points.Add(new Point(vertex.X, vertex.Y));
             }
 
             canvas.Children.Add(p);
+        }
+
+        public void DrawLabel(Vertex vertex, String text)
+        {
+            // Create a red Ellipse.
+            float radius = 1;
+            SolidColorBrush solidBrush = new SolidColorBrush { Color = Colors.Black };
+            Ellipse elipse = new Ellipse
+            {
+                Stroke = solidBrush,
+                Fill = solidBrush,
+                Width = radius * 2,
+                Height = radius * 2
+            };
+
+            TextBlock textBlock = new TextBlock
+            {
+                Text = text,
+                Foreground = new SolidColorBrush(solidBrush.Color)
+            };
+
+            Canvas.SetLeft(textBlock, vertex.X);
+            Canvas.SetTop(textBlock, vertex.Y);
+            canvas.Children.Add(textBlock);
+
+            Canvas.SetLeft(elipse, vertex.X - radius);
+            Canvas.SetTop(elipse, vertex.Y - radius);
+            canvas.Children.Add(elipse);
         }
 
         public void DrawCircumcenter(Triangle triangle)
