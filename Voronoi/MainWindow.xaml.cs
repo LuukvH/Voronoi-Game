@@ -2,17 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Objects;
+using TreeStructure;
 
 namespace Voronoi
 {
@@ -22,13 +18,13 @@ namespace Voronoi
     public partial class MainWindow : Window
     {
         private HalfEdge _selected;
-        private Graph _graph = new Delaunay();
+        private Graph _graph = new Triangulation();
 
-        private bool _drawcircles = false;
-        private bool _drawfaces = false;
-        private bool _drawedges = false;
+        private bool _drawcircles;
+        private bool _drawfaces;
+        private bool _drawedges;
         private bool _drawvoronoi = true;
-        
+
         public MainWindow()
         {
             InitializeComponent();
@@ -37,6 +33,7 @@ namespace Voronoi
             _graph.Create();
 
             DrawGraph(_graph);
+            DrawTree(_graph.Tree.Root);
 
             // Add items to log
             DataGrid.ItemsSource = _graph.Log;
@@ -68,9 +65,9 @@ namespace Voronoi
             {
                 //Draw lines
                 Line line = new Line();
-                line.Visibility = System.Windows.Visibility.Visible;
+                line.Visibility = Visibility.Visible;
                 line.StrokeThickness = 2;
-                line.Stroke = System.Windows.Media.Brushes.LightGreen;
+                line.Stroke = Brushes.LightGreen;
                 try
                 {
                     line.X1 = edge.V1.X;
@@ -81,7 +78,10 @@ namespace Voronoi
                     //halfEdge.Line = line;
                     canvas.Children.Add(line);
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
@@ -113,13 +113,7 @@ namespace Voronoi
                 _drawfaces = !_drawfaces;
                 DrawGraph(_graph);
             }
-
-            if (e.Key == Key.C)
-            {
-                _graph = new Delaunay();
-                DrawGraph(_graph);
-            }
-
+            
             if (e.Key == Key.R)
             {
                 DrawGraph(_graph);
@@ -129,7 +123,7 @@ namespace Voronoi
             {
                 Random r = new Random();
 
-                for (int i = 0; i < 500; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     int x = r.Next(Convert.ToInt32(canvas.ActualWidth));
                     int y = r.Next(Convert.ToInt32(canvas.ActualHeight));
@@ -138,7 +132,7 @@ namespace Voronoi
                 DrawGraph(_graph);
             }
 
-                if (e.Key == Key.N)
+            if (e.Key == Key.N)
             {
                 if (_selected == null)
                 {
@@ -158,6 +152,11 @@ namespace Voronoi
                 he = _selected.Twin;
             }
 
+            if (e.Key == Key.Q)
+            {
+                DrawTree(_graph.Tree.Root);
+            }
+
             if (he != null)
             {
                 _selected = he;
@@ -166,7 +165,6 @@ namespace Voronoi
             DrawGraph(_graph);
         }
 
-        private int _t = 0;
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Vertex vertex = new Vertex(Convert.ToInt32(e.GetPosition(canvas).X), Convert.ToInt32(e.GetPosition(canvas).Y));
@@ -187,6 +185,7 @@ namespace Voronoi
             LogEntry entry = e.AddedItems[0] as LogEntry;
 
             canvas.Children.Clear();
+            if (entry == null) return;
             DrawGraph(entry.State);
 
             foreach (object obj in entry.Objects)
@@ -222,25 +221,66 @@ namespace Voronoi
 
         #region DrawFunctions
 
+        private void DrawTree(Node root, int level = 0, float scale = 1.0f)
+        {
+            for (int index = 0; index < root.Children.Count; index++)
+            {
+                Node node = root.Children[index];
+                float localscale = scale * 1f / (root.Children.Count + 1) * (index + 1);
+
+                float radius = 20;
+                SolidColorBrush solidColorBrush = new SolidColorBrush { Color = Colors.Red };
+                Ellipse elipse = new Ellipse
+                {
+                    Stroke = solidColorBrush,
+                    Width = radius * 2,
+                    Height = radius * 2
+                };
+
+                treeCanvas.Children.Add(elipse);
+                Canvas.SetLeft(elipse, (treeCanvas.ActualWidth * scale) + (localscale * treeCanvas.ActualWidth) - radius);
+                Canvas.SetTop(elipse, 50 * (level + 1) - radius);
+
+                Label label = new Label
+                {
+                    Content = $"F{node.Face.Id:d}",
+                    Foreground = solidColorBrush,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    Width = radius * 2,
+                    Height = radius * 2
+                };
+
+                Canvas.SetLeft(label, treeCanvas.ActualWidth * localscale - radius);
+                Canvas.SetTop(label, 50 * (level + 1) - radius);
+                treeCanvas.Children.Add(label);
+
+                DrawTree(node, level + 1, localscale);
+            }
+        }
+
         private void DrawGraph(Graph graph)
         {
             canvas.Children.Clear();
+            treeCanvas.Children.Clear();
+
+            DrawTree(_graph.Tree.Root);
 
             if (_drawfaces)
             {
                 foreach (Face face in graph.Faces)
                 {
-                    if (face.Color == Colors.Transparent)
-                        face.Color = GetRandomColor();
+                    //if (face.Color == Colors.Transparent)
+                    //face.Color = GetRandomColor();
 
-                    DrawFace(face, face.Color);
+                    DrawFace(face, Colors.Transparent);
                 }
 
                 foreach (Face face in graph.Faces)
                 {
                     if (face is Triangle)
                     {
-                        DrawLabel((face as Triangle).Center, String.Format("V{0:d}", face.Id));
+                        DrawLabel((face as Triangle).Center, $"F{face.Id:d}");
                     }
                 }
             }
@@ -303,7 +343,7 @@ namespace Voronoi
 
             Canvas.SetLeft(myEllipse, v.X - 5);
             Canvas.SetTop(myEllipse, v.Y - 5);
-            Canvas.SetZIndex(myEllipse, 3);
+            Panel.SetZIndex(myEllipse, 3);
 
             // Add the Ellipse to the StackPanel.
             canvas.Children.Add(myEllipse);
@@ -325,7 +365,7 @@ namespace Voronoi
             mySolidColorBrush.Color = color;
 
             Line line = new Line();
-            line.Visibility = System.Windows.Visibility.Visible;
+            line.Visibility = Visibility.Visible;
             line.StrokeThickness = thickness;
             line.Stroke = mySolidColorBrush;
             line.X1 = v1.X;
@@ -408,7 +448,7 @@ namespace Voronoi
             centre.Fill = mySolidColorBrush;
 
             Vertex c = triangle.Circumcenter;
-            float d = Convert.ToSingle(Math.Sqrt(triangle.CircumcenterRangeSquared));
+            float d = triangle.CircumcenterRadius;
 
             // Set the width and height of the Ellipse.
             myEllipse.Width = d * 2;
@@ -419,11 +459,11 @@ namespace Voronoi
 
             Canvas.SetLeft(myEllipse, c.X - d);
             Canvas.SetTop(myEllipse, c.Y - d);
-            Canvas.SetZIndex(myEllipse, 3);
+            Panel.SetZIndex(myEllipse, 3);
 
             Canvas.SetLeft(centre, c.X - 5);
             Canvas.SetTop(centre, c.Y - 5);
-            Canvas.SetZIndex(centre, 3);
+            Panel.SetZIndex(centre, 3);
 
             // Add the Ellipse to the StackPanel.
             canvas.Children.Add(myEllipse);

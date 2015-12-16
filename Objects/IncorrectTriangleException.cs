@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Voronoi
+namespace Objects
 {
     public class IncorrectTriangleException : Exception
     {

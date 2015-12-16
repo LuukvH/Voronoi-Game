@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Objects;
 
 namespace Voronoi
 {
@@ -10,8 +11,8 @@ namespace Voronoi
 
             if (face == null)
                 return false;
-
-            base.AddVertex(vertex);
+            
+            AddVertex(face, vertex);
 
             return true;
         }
@@ -62,10 +63,16 @@ namespace Voronoi
             h9.Next = h3;
             h3.Prev = h9;
 
-            Faces.Add(new Triangle(h1));
-            Faces.Add(new Triangle(h2));
-            Faces.Add(new Triangle(h3));
+            Triangle t1 = new Triangle(h1);
+            Triangle t2 = new Triangle(h2);
+            Triangle t3 = new Triangle(h3);
 
+            Faces.Add(t1);
+            Faces.Add(t2);
+            Faces.Add(t3);
+
+            Tree.Add(vertex, t1, t2, t3);
+            
             LogEntry logEntry = new LogEntry("Adding edges.", this);
             logEntry.Objects.Add(vertex);
             Log.Add(logEntry);

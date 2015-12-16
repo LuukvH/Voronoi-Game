@@ -9,13 +9,22 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="1"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
-        <Canvas x:Name="canvas" Grid.Column="0" MouseDown="canvas_MouseDown" Background="White">
-            
+        <Canvas x:Name="canvas" Grid.Column="0" MouseDown="canvas_MouseDown" Background="White" ClipToBounds="true">
+
         </Canvas>
-        <DataGrid x:Name="DataGrid" Grid.Column="1" AutoGenerateColumns="True" SelectionChanged="dataGrid_SelectionChanged" />
 
+        <Canvas Grid.Column="1" Background="Black">
+        </Canvas>
+        
+        <Canvas x:Name="treeCanvas" Grid.Column="2">
+            <TreeView x:Name="treeView" Height="100" Canvas.Left="155" Canvas.Top="179" Width="100"/>
+        </Canvas>
 
+        <DataGrid x:Name="DataGrid" Grid.Column="3" AutoGenerateColumns="True" SelectionChanged="dataGrid_SelectionChanged" />
+        
     </Grid>
 </Window>

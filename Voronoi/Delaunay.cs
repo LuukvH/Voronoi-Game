@@ -1,4 +1,5 @@
 ﻿using System;
+using Objects;
 
 namespace Voronoi
 {

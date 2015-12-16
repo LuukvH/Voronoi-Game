@@ -1,4 +1,4 @@
-﻿namespace Voronoi
+﻿namespace Objects
 {
     public class Edge
     {

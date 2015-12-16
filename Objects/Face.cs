@@ -1,19 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
-using System.Windows.Media;
 
-namespace Voronoi
+namespace Objects
 {
     public class Face
     {
-        public Color Color;
-
         private static int nextid = 1;
 
         public Face(HalfEdge halfEdge)
         {
             HalfEdge = halfEdge;
-            Color = Colors.Transparent;
 
             Id = nextid++;
         }

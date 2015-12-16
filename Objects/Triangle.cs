@@ -1,10 +1,13 @@
-﻿namespace Voronoi
+﻿using System;
+using Objects;
+
+namespace Voronoi
 {
     public class Triangle : Face
     {
         private bool _calculatedCenter;
         private bool _calculatedCircumcenter;
-        private bool _calculatedCircumcenterRangeSquared;
+        private bool _calculatedCircumcenterRadius;
 
         private Vertex _center;
         private Vertex _circumcenter;
@@ -65,15 +68,17 @@
             }
         }
 
-        public float CircumcenterRangeSquared
+        public float CircumcenterRadius => Convert.ToSingle(Math.Sqrt(CircumcenterRadiusSquared));
+
+        public float CircumcenterRadiusSquared
         {
             get
             {
-                if (_calculatedCircumcenterRangeSquared)
+                if (_calculatedCircumcenterRadius)
                     return _circumcenterRangeSquared;
 
-                _circumcenterRangeSquared = Vertices[0].DeltaSquaredXy(Circumcenter);
-                _calculatedCircumcenterRangeSquared = true;
+                _circumcenterRangeSquared = Vertices[0].DistanceSquared(Circumcenter);
+                _calculatedCircumcenterRadius = true;
 
                 return _circumcenterRangeSquared;
             }
@@ -127,7 +132,7 @@
 
         public bool InsideCircumcenter(Vertex vertex)
         {
-            return Circumcenter.DeltaSquaredXy(vertex) < CircumcenterRangeSquared;
+            return Circumcenter.DistanceSquared(vertex) < CircumcenterRadiusSquared;
         }
     }
 }

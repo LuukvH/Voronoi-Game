@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voronoi", "Voronoi\Voronoi.csproj", "{EF098BE0-55DA-4C5E-A1B4-6388F779BF8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Objects", "Objects\Objects.csproj", "{C30BBE43-BBA0-4BDB-99D4-CCA832E381A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreeStructure", "TreeStructure\TreeStructure.csproj", "{8A4999BA-ECB8-40DD-B5E3-8370856A3E66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{EF098BE0-55DA-4C5E-A1B4-6388F779BF8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF098BE0-55DA-4C5E-A1B4-6388F779BF8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF098BE0-55DA-4C5E-A1B4-6388F779BF8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C30BBE43-BBA0-4BDB-99D4-CCA832E381A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C30BBE43-BBA0-4BDB-99D4-CCA832E381A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C30BBE43-BBA0-4BDB-99D4-CCA832E381A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C30BBE43-BBA0-4BDB-99D4-CCA832E381A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A4999BA-ECB8-40DD-B5E3-8370856A3E66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A4999BA-ECB8-40DD-B5E3-8370856A3E66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A4999BA-ECB8-40DD-B5E3-8370856A3E66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A4999BA-ECB8-40DD-B5E3-8370856A3E66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

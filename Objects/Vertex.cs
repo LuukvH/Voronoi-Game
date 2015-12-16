@@ -1,4 +1,6 @@
-﻿namespace Voronoi
+﻿using System;
+
+namespace Objects
 {
     public class Vertex
     {
@@ -28,10 +30,14 @@
             return float.IsNaN(X) || float.IsNaN(Y);
         }
 
-        public float DeltaSquaredXy(Vertex t)
+        public float Distance(Vertex vertex) => Convert.ToSingle(Math.Sqrt(DistanceSquared(vertex)));
+
+        public float ManhattanDistance(Vertex vertex) => Convert.ToSingle(Math.Abs(X - vertex.X) + Math.Abs(Y - vertex.Y));
+
+        public float DistanceSquared(Vertex vertex)
         {
-            float dx = X - t.X;
-            float dy = Y - t.Y;
+            float dx = X - vertex.X;
+            float dy = Y - vertex.Y;
             return dx*dx + dy*dy;
         }
 

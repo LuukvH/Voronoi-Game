@@ -56,19 +56,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Delaunay.cs" />
-    <Compile Include="Edge.cs" />
     <Compile Include="LogEntry.cs" />
-    <Compile Include="Face.cs" />
     <Compile Include="Graph.cs" />
-    <Compile Include="HalfEdge.cs" />
-    <Compile Include="IncorrectTriangleException.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Triangle.cs" />
+    <Compile Include="TreeWindow.xaml.cs">
+      <DependentUpon>TreeWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Triangulation.cs" />
-    <Compile Include="Utility.cs" />
-    <Compile Include="Vertex.cs" />
     <Compile Include="App.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -106,6 +102,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="TreeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Objects\Objects.csproj">
+      <Project>{c30bbe43-bba0-4bdb-99d4-cca832e381a5}</Project>
+      <Name>Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TreeStructure\TreeStructure.csproj">
+      <Project>{8a4999ba-ecb8-40dd-b5e3-8370856a3e66}</Project>
+      <Name>TreeStructure</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
