@@ -338,7 +338,7 @@ namespace Voronoi
             {
                 foreach (HalfEdge halfEdge in graph.HalfEdges)
                 {
-                    if (halfEdge.Origin.Distance(halfEdge.Prev.Origin) >= 2 * _oneEuroRadius + 2 * _twoEuroRadius)
+                    if (halfEdge.Origin.Distance(halfEdge.Next.Origin) >= 2 * _oneEuroRadius + 2 * _twoEuroRadius)
                         DrawEdge(halfEdge, Colors.Green, 2);
                     else
                         DrawEdge(halfEdge, Colors.Red, 2);
