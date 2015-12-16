@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Objects;
 using TreeStructure;
@@ -18,12 +19,15 @@ namespace Voronoi
     public partial class MainWindow : Window
     {
         private HalfEdge _selected;
-        private Graph _graph = new Triangulation();
+        private Graph _graph = new Delaunay();
 
         private bool _drawcircles;
         private bool _drawfaces;
         private bool _drawedges;
         private bool _drawvoronoi = true;
+
+        private float _oneEuroRadius = 30;
+        private float _twoEuroRadius = 32;
 
         public MainWindow()
         {
@@ -33,7 +37,7 @@ namespace Voronoi
             _graph.Create();
 
             DrawGraph(_graph);
-            DrawTree(_graph.Tree.Root);
+            //DrawTree(_graph.Tree.Root);
 
             // Add items to log
             DataGrid.ItemsSource = _graph.Log;
@@ -59,7 +63,52 @@ namespace Voronoi
         // Testing only
         public void DrawVoronoi()
         {
-            List<Edge> edges = (from halfEdge in _graph.HalfEdges where halfEdge.Twin != null let f1 = halfEdge.Face let f2 = halfEdge.Twin.Face where f1 is Triangle && f2 is Triangle let t1 = f1 as Triangle let t2 = f2 as Triangle let v1 = t1.Circumcenter let v2 = t2.Circumcenter select new Edge(v1, v2)).ToList();
+            bool twoEuroPlaced = false;
+
+            List<Edge> edges = new List<Edge>();
+            foreach (HalfEdge halfEdge in _graph.HalfEdges)
+            {
+                if (halfEdge.Twin != null)
+                {
+                    Face f1 = halfEdge.Face;
+                    Face f2 = halfEdge.Twin.Face;
+
+                    if (f1 is Triangle && f2 is Triangle)
+                    {
+                        Triangle t1 = f1 as Triangle;
+                        Triangle t2 = f2 as Triangle;
+                        Vertex v1 = t1.Circumcenter;
+                        Vertex v2 = t2.Circumcenter;
+
+                        if ((halfEdge.Origin.Distance(halfEdge.Twin.Origin) >= 2 * _oneEuroRadius + 2 * _twoEuroRadius))
+                        {
+                            DrawEdge(new Edge(v1, v2), Colors.Green, 3);
+
+                            if (!twoEuroPlaced)
+                            {
+                                if (v1.X > 0 && v1.X < canvas.ActualWidth && v1.Y > 0 && v1.Y < canvas.ActualHeight)
+                                {
+                                    twoEuroPlaced = true;
+                                    Image image = new Image
+                                    {
+                                        Source = new BitmapImage(new Uri("2euro.png", UriKind.Relative)),
+                                        Height = _twoEuroRadius*2,
+                                        Width = _twoEuroRadius*2
+                                    };
+                                    Canvas.SetLeft(image, v1.X - _twoEuroRadius);
+                                    Canvas.SetTop(image, v1.Y - _twoEuroRadius);
+                                    Panel.SetZIndex(image, -1);
+                                    canvas.Children.Add(image);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            DrawEdge(new Edge(v1, v2), Colors.Red, 1);
+                        }
+                    }
+                }
+            }
 
             foreach (Edge edge in edges)
             {
@@ -113,7 +162,7 @@ namespace Voronoi
                 _drawfaces = !_drawfaces;
                 DrawGraph(_graph);
             }
-            
+
             if (e.Key == Key.R)
             {
                 DrawGraph(_graph);
@@ -123,7 +172,7 @@ namespace Voronoi
             {
                 Random r = new Random();
 
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 20; i++)
                 {
                     int x = r.Next(Convert.ToInt32(canvas.ActualWidth));
                     int y = r.Next(Convert.ToInt32(canvas.ActualHeight));
@@ -154,7 +203,7 @@ namespace Voronoi
 
             if (e.Key == Key.Q)
             {
-                DrawTree(_graph.Tree.Root);
+                //DrawTree(_graph.Tree.Root);
             }
 
             if (he != null)
@@ -264,7 +313,7 @@ namespace Voronoi
             canvas.Children.Clear();
             treeCanvas.Children.Clear();
 
-            DrawTree(_graph.Tree.Root);
+            //DrawTree(_graph.Tree.Root);
 
             if (_drawfaces)
             {
@@ -289,7 +338,10 @@ namespace Voronoi
             {
                 foreach (HalfEdge halfEdge in graph.HalfEdges)
                 {
-                    DrawEdge(halfEdge, Colors.Black, 2);
+                    if (halfEdge.Origin.Distance(halfEdge.Prev.Origin) >= 2 * _oneEuroRadius + 2 * _twoEuroRadius)
+                        DrawEdge(halfEdge, Colors.Green, 2);
+                    else
+                        DrawEdge(halfEdge, Colors.Red, 2);
                 }
             }
 
@@ -326,27 +378,30 @@ namespace Voronoi
         public void DrawVertex(Vertex v, Color color)
         {
             // Create a red Ellipse.
-            Ellipse myEllipse = new Ellipse();
+            SolidColorBrush solidColorBrush = new SolidColorBrush { Color = color };
 
-            // Create a SolidColorBrush with a red color to fill the 
-            // Ellipse with.
-            SolidColorBrush mySolidColorBrush = new SolidColorBrush();
+            Ellipse ellipse = new Ellipse
+            {
+                Fill = solidColorBrush,
+                Width = 10,
+                Height = 10
+            };
 
-            // Describes the brush's color using RGB values. 
-            // Each value has a range of 0-255.
-            mySolidColorBrush.Color = color;
-            myEllipse.Fill = mySolidColorBrush;
+            Image image = new Image
+            {
+                Source = new BitmapImage(new Uri("1euro.png", UriKind.Relative)),
+                Height = _oneEuroRadius * 2,
+                Width = _oneEuroRadius * 2
+            };
+            Canvas.SetLeft(image, v.X - _oneEuroRadius);
+            Canvas.SetTop(image, v.Y - _oneEuroRadius);
+            Panel.SetZIndex(image, -1);
+            canvas.Children.Add(image);
 
-            // Set the width and height of the Ellipse.
-            myEllipse.Width = 10;
-            myEllipse.Height = 10;
-
-            Canvas.SetLeft(myEllipse, v.X - 5);
-            Canvas.SetTop(myEllipse, v.Y - 5);
-            Panel.SetZIndex(myEllipse, 3);
-
-            // Add the Ellipse to the StackPanel.
-            canvas.Children.Add(myEllipse);
+            Canvas.SetLeft(ellipse, v.X - 5);
+            Canvas.SetTop(ellipse, v.Y - 5);
+            Panel.SetZIndex(ellipse, 3);
+            canvas.Children.Add(ellipse);
         }
 
         private void DrawEdge(HalfEdge halfEdge, Color color, double thickness)
@@ -361,19 +416,19 @@ namespace Voronoi
 
         private void DrawEdge(Vertex v1, Vertex v2, Color color, double thickness)
         {
-            SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-            mySolidColorBrush.Color = color;
+            SolidColorBrush solidColorBrush = new SolidColorBrush { Color = color };
 
-            Line line = new Line();
-            line.Visibility = Visibility.Visible;
-            line.StrokeThickness = thickness;
-            line.Stroke = mySolidColorBrush;
-            line.X1 = v1.X;
-            line.X2 = v2.X;
-            line.Y1 = v1.Y;
-            line.Y2 = v2.Y;
+            Line line = new Line
+            {
+                Visibility = Visibility.Visible,
+                StrokeThickness = thickness,
+                Stroke = solidColorBrush,
+                X1 = v1.X,
+                X2 = v2.X,
+                Y1 = v1.Y,
+                Y2 = v2.Y
+            };
 
-            //halfEdge.Line = line;
             canvas.Children.Add(line);
         }
 

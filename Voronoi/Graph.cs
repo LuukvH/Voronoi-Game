@@ -80,7 +80,7 @@ namespace Voronoi
             Triangle t1 = new Triangle(h1);
             Faces.Add(t1);
             Tree = new Tree(t1);
-            //Faces.Add(new Triangle(h4));
+            Faces.Add(new Triangle(h4));
         }
 
         protected Face FindFace(Vertex vertex)

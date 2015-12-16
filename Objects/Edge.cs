@@ -1,4 +1,6 @@
-﻿namespace Objects
+﻿using System;
+
+namespace Objects
 {
     public class Edge
     {
@@ -10,5 +12,7 @@
             V1 = v1;
             V2 = v2;
         }
+
+        
     }
 }
