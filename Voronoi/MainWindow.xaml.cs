@@ -21,9 +21,10 @@ namespace Voronoi
         private HalfEdge _selected;
         private Graph _graph = new Delaunay();
 
+        private bool _labeling = false;
         private bool _drawcircles;
-        private bool _drawfaces;
-        private bool _drawedges;
+        private bool _drawfaces = true;
+        private bool _drawedges = true;
         private bool _drawvoronoi = true;
 
         private float _oneEuroRadius = 30;
@@ -60,12 +61,59 @@ namespace Voronoi
             return _colors[_rand.Next(_colors.Count)];
         }
 
+        public void GenerateVoronoi()
+        {
+            List<PlayerFace> faces = new List<PlayerFace>();
+            List<HalfEdge> edges = new List<HalfEdge>(_graph.HalfEdges);
+            HalfEdge h;
+
+            foreach (Vertex vertex in _graph.Vertices)
+            {
+                PlayerFace face;
+                foreach (HalfEdge halfEdge in _graph.HalfEdges)
+                {
+                    if (halfEdge.Origin.Equals(vertex))
+                    {
+                        if (vertex is PlayerVertex)
+                        {
+                            h = halfEdge;
+
+                            face = new PlayerFace((vertex as PlayerVertex).Player, h);
+                            face.Vertices.Add((h.Face as Triangle).Circumcenter);
+
+                            while ((h = h.Twin.Next) != halfEdge)
+                            {
+                                if (h.Face != null)
+                                {
+                                    face.Vertices.Add((h.Face as Triangle).Circumcenter);
+                                }
+                            }
+                            faces.Add(face);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            foreach (PlayerFace face in faces)
+            {
+                if (face.Player == Player.Player1)
+                    DrawFace(face as Face, Colors.Red);
+
+                if (face.Player == Player.Player2)
+                    DrawFace(face as Face, Colors.Blue);
+            }
+        }
+
+
         // Testing only
         public void DrawVoronoi()
         {
-            bool twoEuroPlaced = false;
+            GenerateVoronoi();
 
+            bool twoEuroPlaced = false;
             List<Edge> edges = new List<Edge>();
+            
             foreach (HalfEdge halfEdge in _graph.HalfEdges)
             {
                 if (halfEdge.Twin != null)
@@ -92,8 +140,8 @@ namespace Voronoi
                                     Image image = new Image
                                     {
                                         Source = new BitmapImage(new Uri("2euro.png", UriKind.Relative)),
-                                        Height = _twoEuroRadius*2,
-                                        Width = _twoEuroRadius*2
+                                        Height = _twoEuroRadius * 2,
+                                        Width = _twoEuroRadius * 2
                                     };
                                     Canvas.SetLeft(image, v1.X - _twoEuroRadius);
                                     Canvas.SetTop(image, v1.Y - _twoEuroRadius);
@@ -104,7 +152,10 @@ namespace Voronoi
                         }
                         else
                         {
-                            DrawEdge(new Edge(v1, v2), Colors.Red, 1);
+                            if (_labeling)
+                                DrawEdge(new Edge(v1, v2), Colors.Red, 1);
+                            else
+                                DrawEdge(new Edge(v1, v2), Colors.Green, 3);
                         }
                     }
                 }
@@ -168,6 +219,7 @@ namespace Voronoi
                 DrawGraph(_graph);
             }
 
+            /*
             if (e.Key == Key.G)
             {
                 Random r = new Random();
@@ -176,10 +228,11 @@ namespace Voronoi
                 {
                     int x = r.Next(Convert.ToInt32(canvas.ActualWidth));
                     int y = r.Next(Convert.ToInt32(canvas.ActualHeight));
-                    _graph.AddVertex(new Vertex(x, y));
+                    _graph.AddVertex(new PlayerVertex(Player.Player1, x, y));
                 }
                 DrawGraph(_graph);
             }
+            */
 
             if (e.Key == Key.N)
             {
@@ -198,12 +251,18 @@ namespace Voronoi
 
             if (e.Key == Key.T)
             {
-                he = _selected.Twin;
+                if (_selected != null)
+                    he = _selected.Twin;
             }
 
             if (e.Key == Key.Q)
             {
                 //DrawTree(_graph.Tree.Root);
+            }
+
+            if (e.Key == Key.O)
+            {
+                _labeling = !_labeling;
             }
 
             if (he != null)
@@ -214,16 +273,31 @@ namespace Voronoi
             DrawGraph(_graph);
         }
 
+        private Player currentPlayer = Player.Player1;
         private void canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            Vertex vertex = new Vertex(Convert.ToInt32(e.GetPosition(canvas).X), Convert.ToInt32(e.GetPosition(canvas).Y));
+            Vertex vertex = new PlayerVertex(currentPlayer, Convert.ToInt32(e.GetPosition(canvas).X), Convert.ToInt32(e.GetPosition(canvas).Y));
 
             canvas.Children.Clear();
 
             //_selected = _graph.FindFace(vertex).HalfEdge;
             _graph.AddVertex(vertex);
 
+            SwitchPlayer();
+
             DrawGraph(_graph);
+        }
+
+        private void SwitchPlayer()
+        {
+            if (currentPlayer == Player.Player1)
+            {
+                currentPlayer = Player.Player2;
+            }
+            else if (currentPlayer == Player.Player2)
+            {
+                currentPlayer = Player.Player1;
+            }
         }
 
         private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -319,9 +393,6 @@ namespace Voronoi
             {
                 foreach (Face face in graph.Faces)
                 {
-                    //if (face.Color == Colors.Transparent)
-                    //face.Color = GetRandomColor();
-
                     DrawFace(face, Colors.Transparent);
                 }
 
@@ -339,9 +410,20 @@ namespace Voronoi
                 foreach (HalfEdge halfEdge in graph.HalfEdges)
                 {
                     if (halfEdge.Origin.Distance(halfEdge.Next.Origin) >= 2 * _oneEuroRadius + 2 * _twoEuroRadius)
+                    {
                         DrawEdge(halfEdge, Colors.Green, 2);
+                    }
                     else
-                        DrawEdge(halfEdge, Colors.Red, 2);
+                    {
+                        if (_labeling)
+                        {
+                            DrawEdge(halfEdge, Colors.Red, 2);
+                        }
+                        else
+                        {
+                            DrawEdge(halfEdge, Colors.Green, 2);
+                        }
+                    }
                 }
             }
 
@@ -371,7 +453,7 @@ namespace Voronoi
 
             foreach (Vertex vertex in graph.Vertices)
             {
-                DrawVertex(vertex, Colors.Blue);
+                DrawVertex(vertex, Colors.Black);
             }
         }
 
@@ -488,41 +570,33 @@ namespace Voronoi
 
         public void DrawCircumcenter(Triangle triangle)
         {
-            // Create a red Ellipse.
-            Ellipse myEllipse = new Ellipse();
-            Ellipse centre = new Ellipse();
-
-            // Create a SolidColorBrush with a red color to fill the 
-            // Ellipse with.
-            SolidColorBrush mySolidColorBrush = new SolidColorBrush();
-
-            // Describes the brush's color using RGB values. 
-            // Each value has a range of 0-255.
-            mySolidColorBrush.Color = Colors.LightPink;
-            myEllipse.Stroke = mySolidColorBrush;
-            centre.Fill = mySolidColorBrush;
-
             Vertex c = triangle.Circumcenter;
             float d = triangle.CircumcenterRadius;
+            SolidColorBrush solidColorBrush = new SolidColorBrush { Color = Colors.LightPink };
 
-            // Set the width and height of the Ellipse.
-            myEllipse.Width = d * 2;
-            myEllipse.Height = d * 2;
+            Ellipse centre = new Ellipse
+            {
+                Fill = solidColorBrush,
+                Width = 10,
+                Height = 10
+            };
 
-            centre.Width = 10;
-            centre.Height = 10;
-
-            Canvas.SetLeft(myEllipse, c.X - d);
-            Canvas.SetTop(myEllipse, c.Y - d);
-            Panel.SetZIndex(myEllipse, 3);
+            Ellipse ellipse = new Ellipse
+            {
+                Stroke = solidColorBrush,
+                Width = d * 2,
+                Height = d * 2
+            };
 
             Canvas.SetLeft(centre, c.X - 5);
             Canvas.SetTop(centre, c.Y - 5);
             Panel.SetZIndex(centre, 3);
-
-            // Add the Ellipse to the StackPanel.
-            canvas.Children.Add(myEllipse);
             canvas.Children.Add(centre);
+
+            Canvas.SetLeft(ellipse, c.X - d);
+            Canvas.SetTop(ellipse, c.Y - d);
+            Panel.SetZIndex(ellipse, 3);
+            canvas.Children.Add(ellipse);
         }
 
         #endregion

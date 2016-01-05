@@ -30,6 +30,12 @@ namespace Objects
             return float.IsNaN(X) || float.IsNaN(Y);
         }
 
+
+        public bool Equals(Vertex v)
+        {
+            return this.X == v.X && this.Y == v.Y;
+        }
+
         public float Distance(Vertex vertex) => Convert.ToSingle(Math.Sqrt(DistanceSquared(vertex)));
 
         public float ManhattanDistance(Vertex vertex) => Convert.ToSingle(Math.Abs(X - vertex.X) + Math.Abs(Y - vertex.Y));

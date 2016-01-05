@@ -4,13 +4,12 @@ namespace Objects
 {
     public class Face
     {
-        private static int nextid = 1;
+        private static int _nextid = 1;
 
         public Face(HalfEdge halfEdge)
         {
             HalfEdge = halfEdge;
-
-            Id = nextid++;
+            Id = _nextid++;
         }
 
         public int Id { get; private set; }
